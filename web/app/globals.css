@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Pastikan background default adalah hitam agar dot ungu lo kelihatan */
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+html, body {
+  background-color: black !important;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+html {
+  text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  cursor: crosshair;
+}
+
+.glass-panel {
+  @apply bg-white/5 border border-white/10 backdrop-blur-3xl rounded-[2.5rem] transition-all duration-700;
+}
