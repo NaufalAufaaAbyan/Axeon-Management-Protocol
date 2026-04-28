@@ -3,7 +3,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-// IMPORT SOLANA WALLET HOOKS
 import { useWallet } from "@solana/wallet-adapter-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -12,17 +11,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAdmin = pathname.startsWith('/dashboard/admin');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // PANGGIL WALLET STATE
   const { publicKey, disconnect, connected } = useWallet();
 
-  // Cegah masuk ke dashboard kalau wallet tiba-tiba putus
   useEffect(() => {
     if (!connected) {
       router.push("/login");
     }
   }, [connected, router]);
 
-  // Fungsi potong alamat wallet: 7aFx...9qB2
   const truncateAddress = (address: string) => {
     if (!address) return "";
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -35,6 +31,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       toast.success("Wallet Disconnected Successfully");
       router.push("/");
     } catch (error) {
+      // FIX: Gunakan variabel error (log ke console)
+      console.error("Disconnect Error:", error);
       toast.error("Failed to disconnect wallet");
     }
   };
@@ -93,7 +91,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
            </button>
 
            <div className="flex items-center gap-4">
-             {/* RENDER ALAMAT WALLET ASLI DI SINI */}
              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-white/5 rounded-full">
                 <div className={`size-2 rounded-full shadow-[0_0_10px_currentColor] ${connected ? 'bg-emerald-500 text-emerald-500' : 'bg-zinc-500 text-zinc-500'}`} />
                 <span className="text-[10px] font-mono text-zinc-400">
