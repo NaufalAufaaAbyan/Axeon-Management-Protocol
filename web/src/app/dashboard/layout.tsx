@@ -1,17 +1,42 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+// IMPORT SOLANA WALLET HOOKS
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isAdmin = pathname.startsWith('/dashboard/admin');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleDisconnect = (e: React.MouseEvent) => {
+  // PANGGIL WALLET STATE
+  const { publicKey, disconnect, connected } = useWallet();
+
+  // Cegah masuk ke dashboard kalau wallet tiba-tiba putus
+  useEffect(() => {
+    if (!connected) {
+      router.push("/login");
+    }
+  }, [connected, router]);
+
+  // Fungsi potong alamat wallet: 7aFx...9qB2
+  const truncateAddress = (address: string) => {
+    if (!address) return "";
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
+
+  const handleDisconnect = async (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.success("Wallet Disconnected Successfully");
+    try {
+      await disconnect();
+      toast.success("Wallet Disconnected Successfully");
+      router.push("/");
+    } catch (error) {
+      toast.error("Failed to disconnect wallet");
+    }
   };
 
   const closeMenu = () => setMobileMenuOpen(false);
@@ -19,12 +44,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-[#020617] text-zinc-100 flex font-sans selection:bg-cyan-500/30 overflow-hidden">
       
-      {/* FIX: z-[60] -> z-60 */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-sm md:hidden" onClick={closeMenu} />
       )}
 
-      {/* FIX: z-[70] -> z-70 */}
       <aside className={`fixed inset-y-0 left-0 z-70 w-64 bg-zinc-950 border-r border-white/5 flex flex-col p-6 transition-transform duration-300 md:relative md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-2">
@@ -56,24 +79,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="mt-auto border-t border-white/5 pt-6">
-          <Link href="/" className="text-[10px] text-zinc-500 hover:text-white uppercase tracking-widest font-bold flex items-center gap-2">
+          <button onClick={handleDisconnect} className="text-[10px] text-zinc-500 hover:text-white uppercase tracking-widest font-bold flex items-center gap-2 w-full text-left cursor-pointer">
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
             Sign Out
-          </Link>
+          </button>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.05),transparent_50%)] relative">
         <header className="h-20 border-b border-white/5 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between md:justify-end px-6 md:px-8 sticky top-0 z-50">
-           {/* FIX: Tambah aria-label dan title buat hamburger menu */}
            <button title="Toggle Menu" aria-label="Toggle Menu" className="md:hidden text-white" onClick={() => setMobileMenuOpen(true)}>
              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
            </button>
 
            <div className="flex items-center gap-4">
+             {/* RENDER ALAMAT WALLET ASLI DI SINI */}
              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-white/5 rounded-full">
-                <div className="size-2 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981]" />
-                <span className="text-[10px] font-mono text-zinc-400">7aFx...9qB2</span>
+                <div className={`size-2 rounded-full shadow-[0_0_10px_currentColor] ${connected ? 'bg-emerald-500 text-emerald-500' : 'bg-zinc-500 text-zinc-500'}`} />
+                <span className="text-[10px] font-mono text-zinc-400">
+                  {publicKey ? truncateAddress(publicKey.toBase58()) : 'Not Connected'}
+                </span>
              </div>
              <button onClick={handleDisconnect} className="px-6 py-2.5 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-full hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all">
                Disconnect
