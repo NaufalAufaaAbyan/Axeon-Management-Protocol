@@ -90,4 +90,4 @@ npm run dev
 * **Superteam Indonesia Community** - Mentorship & Ecosystem Support.
 
 ---
-**© 2026 Axeon Protocol.** *Built for Indonesia National Campus Hackathon.*kathon.*
+**© 2026 Axeon Protocol.** *Built for Indonesia National Campus Hackathon.*
