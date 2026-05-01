@@ -1,48 +1,32 @@
 import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
-import WalletContextProvider from "./components/WalletContextProvider";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "../components/providers/ThemeProvider";
+import WalletContextProvider from "../components/providers/WalletContextProvider";
+import { Toaster } from "sonner"; // IMPORT SONNER DI SINI
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Axeon Protocol | Autonomous Access Layer",
-  description: "The institutional-grade economic layer. Standardizing decentralized intent through automated payment gateways and precision on-chain audits on Solana.",
-  keywords: ["Solana", "DeFi", "Axeon", "Web3", "Payment Gateway", "Smart Contract"],
-  openGraph: {
-    title: "Axeon Protocol",
-    description: "Decentralized Economic Intent for Solana Communities.",
-    type: "website",
-  },
+  title: "Axeon Protocol | Stateless Subscription Infrastructure",
+  description: "Monetize your Telegram and Discord communities seamlessly with Solana's zero-custody infrastructure.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="bg-[#020617] text-zinc-100 font-sans antialiased overflow-x-hidden selection:bg-cyan-500/30">
-        {/* BUNGKUS DENGAN WALLET PROVIDER */}
-        <WalletContextProvider>
-          {children}
-          
-          <Toaster 
-            position="bottom-right" 
-            toastOptions={{
-              style: {
-                background: '#09090b',
-                color: '#fff',
-                border: '1px solid #27272a',
-                fontSize: '12px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                fontWeight: 'bold'
-              },
-              success: { iconTheme: { primary: '#22d3ee', secondary: '#000' } },
-              error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
-            }} 
-          />
-        </WalletContextProvider>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <body className={`${inter.className} bg-white dark:bg-[#050505] text-zinc-900 dark:text-zinc-100 transition-colors duration-300`}>
+        <ThemeProvider>
+          <WalletContextProvider>
+            {children}
+            {/* INJEKSI TOASTER DI BAWAH CHILDREN */}
+            <Toaster position="bottom-right" theme="system" richColors closeButton />
+          </WalletContextProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

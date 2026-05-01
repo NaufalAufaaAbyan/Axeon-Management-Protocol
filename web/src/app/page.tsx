@@ -1,508 +1,596 @@
 "use client";
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import Shuffle from './components/magic/Shuffle';
-import GooeyNav from './components/magic/GooeyNav';
-import ClickSpark from './components/magic/ClickSpark';
-
-const DotField = dynamic(() => import('./components/magic/DotField'), { ssr: false });
+import { useTheme } from 'next-themes';
+import Shuffle from '../components/magic/Shuffle';
+import ClickSpark from '../components/magic/ClickSpark';
+import GridBackground from '../components/magic/GridBackground';
 
 type Lang = 'en' | 'id';
 
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lang, setLang] = useState<Lang>('en');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  
+  const { theme, setTheme, systemTheme } = useTheme();
+
+  const [stats, setStats] = useState({ vol: 10452300.50, com: 2405, user: 150240 });
+  const [activities, setActivities] = useState([
+    { id: 1, type: 'Subscription', amount: '+ 25.00', currency: 'USDC', time: 'Just now' },
+    { id: 2, type: 'Fiat On-Ramp', amount: '+ 50.00', currency: 'USD', time: '2s ago' },
+    { id: 3, type: 'Renewal Sweep', amount: '+ 10.00', currency: 'USDC', time: '5s ago' },
+  ]);
 
   useEffect(() => {
+    // FIX: Menggunakan requestAnimationFrame agar tidak memicu error synchronous setState
     const frame = requestAnimationFrame(() => setIsClient(true));
-    return () => cancelAnimationFrame(frame);
+
+    const statsInterval = setInterval(() => {
+      setStats(prev => ({
+        vol: prev.vol + (Math.random() * 50),
+        com: prev.com + (Math.random() > 0.8 ? 1 : 0),
+        user: prev.user + Math.floor(Math.random() * 3)
+      }));
+    }, 3500);
+
+    const activityTypes = ['Subscription', 'Fiat On-Ramp', 'Renewal Sweep', 'Crypto Checkout'];
+    const currencies = ['USDC', 'USD', 'SOL'];
+    const activityInterval = setInterval(() => {
+      const newActivity = {
+        id: Date.now(),
+        type: activityTypes[Math.floor(Math.random() * activityTypes.length)],
+        amount: `+ ${(Math.random() * 100).toFixed(2)}`,
+        currency: currencies[Math.floor(Math.random() * currencies.length)],
+        time: 'Just now'
+      };
+      setActivities(prev => {
+        const updated = [newActivity, ...prev].map((act, idx) => {
+          if (idx === 1) return { ...act, time: '2s ago' };
+          if (idx === 2) return { ...act, time: '5s ago' };
+          return act;
+        });
+        return updated.slice(0, 3);
+      });
+    }, 4000);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      clearInterval(statsInterval);
+      clearInterval(activityInterval);
+    };
   }, []);
+
+  const currentTheme = theme === 'system' ? systemTheme : theme;
 
   const t = {
     en: {
-      nav: ["Protocol", "Architecture", "Guide", "Pricing"],
-      badge: "Axeon V1 Mainnet Beta",
-      heroTitle1: "COMMUNITY MONETIZATION.",
-      heroTitle2: "FULLY AUTONOMOUS.",
-      heroSub: "Axeon Protocol is an institutional-grade infrastructure for premium communities. We bridge Fiat (QRIS) to Solana, automate subscription verifications, and execute zero-gas expiry sweeps via smart contracts.",
-      btnStart: "Launch Dashboard",
-      btnDocs: "Read Whitepaper",
+      navProduct: "Product",
+      navSolutions: "Solutions",
+      navPricing: "Pricing",
+      navDocs: "Developers",
+      badge: "AXEON PROTOCOL V1.0",
+      heroTitle1: "THE OPERATING",
+      heroTitle2: "SYSTEM FOR",
+      heroTitle3: "COMMUNITIES.",
+      heroSub: "Monetize your Telegram and Discord communities seamlessly. Native crypto routing combined with robust Fiat on/off-ramps, powered by Solana's zero-custody infrastructure.",
+      btnStart: "Start Building",
+      btnDocs: "Read Documentation",
+      statVolDesc: "Total Volume Routed",
+      statComDesc: "Active Communities",
+      statUserDesc: "Premium Subscribers",
+      trustBadge: "POWERING THE NEXT GENERATION OF CREATOR ECONOMY",
+      howTitle: "How it works.",
+      howSub: "From zero to revenue in minutes.",
+      how1: "Deploy Vault",
+      how1Desc: "Create a smart contract vault in one click. No coding required.",
+      how2: "Invite Sentinel",
+      how2Desc: "Add our bot to your Telegram group to automate member management.",
+      how3: "Earn USDC",
+      how3Desc: "Users pay via crypto. Funds go directly to your wallet instantly.",
+      featTitle: "Enterprise-Grade.",
+      featSub: "Consumer Experience.",
+      featDesc: "Everything you need to scale a premium digital community without the operational headache.",
+      feat1Title: "Fiat ↔ Crypto Seamless Gateway",
+      feat1Desc: "Accept credit cards, Apple Pay, and bank transfers directly. Axeon instantly converts fiat to USDC on-chain, eliminating volatility and bridging Web2 users to Web3 effortlessly.",
+      feat2Title: "Zero-Custody Architecture",
+      feat2Desc: "Funds are routed directly via Program Derived Addresses (PDAs). We never hold your liquidity. 100% on-chain transparency.",
+      feat3Title: "Axeon Sentinel Bot",
+      feat3Desc: "Our Telegram bot listens to on-chain events. It automatically grants access upon payment and kicks members when their PDA expires.",
+      pricingTitle: "Transparent Pricing.",
+      pricingSub: "Scale your community with a model that grows with you.",
       
-      whatTag: "The Problem & Solution",
-      whatTitle: "The Operational Nightmare, Solved.",
-      whatDesc: "Managing paid Telegram or Discord groups manually is unscalable. Axeon standardizes the entire lifecycle—from payment to access revocation—trustlessly on the Solana blockchain.",
-      vsOld: "The Old Way (Manual)",
-      vsOld1: "Checking bank mutations manually.",
-      vsOld2: "Fake transfer receipts & group leakage.",
-      vsOld3: "Forgetting to kick expired members.",
-      vsNew: "The Axeon Way (Automated)",
-      vsNew1: "Instant QRIS-to-Stablecoin settlement.",
-      vsNew2: "Cryptographic PDA verification.",
-      vsNew3: "Precision 60-second auto-sweep & kick.",
-
-      b1Tag: "01 / Infrastructure",
-      b1Title: "The Sentinel Engine.",
-      b1Desc: "Our off-chain workers synchronize with Solana PDA states every 60 seconds. This ensures absolute membership precision, instantly revoking access the exact minute a subscription expires.",
-      b2Tag: "02 / Security",
-      b2Title: "Non-Custodial Vaults.",
-      b2Desc: "Axeon never touches your community's liquidity. All subscription intent is routed directly to your personal decentralized wallet via Program Derived Addresses.",
-      b3Tag: "03 / Gateway",
-      b3Title: "Hybrid Fiat-to-Web3.",
-      b3Desc: "Remove friction for Web2 users. Accept local Bank/QRIS payments that are instantly auto-swapped into USDC on Solana, protecting your revenue from crypto volatility.",
-      b4Tag: "04 / Automation",
-      b4Title: "Proactive Retention.",
-      b4Desc: "Prevent churn autonomously. The Sentinel Bot automatically dispatches localized Telegram Direct Messages from H-3 to H-1 before a member's active period concludes.",
+      p1Name: "Starter",
+      p1Price: "Free",
+      p1Desc: "Perfect for new communities starting their monetization journey.",
+      p1Feat1: "Up to 100 Active Subscribers",
+      p1Feat2: "Crypto Payments Only (USDC/SOL)",
+      p1Feat3: "Basic Sentinel Telegram Bot",
+      p1Feat4: "2.5% Protocol Fee",
       
-      guideTag: "Integration Guide",
-      guideTitle: "Deploy in Minutes. Zero Code.",
-      guideDesc: "Launch your decentralized monetization layer effortlessly. From smart contract deployment to Telegram integration in 4 simple steps.",
-      g1: "1. Deploy Vault",
-      g1Desc: "Connect your Solana wallet and initialize your non-custodial PDA vault via our dashboard.",
-      g2: "2. Add Sentinel Bot",
-      g2Desc: "Invite Axeon Bot to your Telegram group and grant it basic moderation permissions.",
-      g3: "3. Share Payment Link",
-      g3Desc: "Members pay via your unique Axeon link using Crypto or local Fiat (QRIS/Bank Transfer).",
-      g4: "4. Auto-Pilot Active",
-      g4Desc: "Axeon automatically manages entry, sends renewal DMs, and revokes access upon expiry.",
+      p2Name: "Pro",
+      p2Price: "$49",
+      p2Period: "/mo",
+      p2Desc: "Advanced tools for growing communities and serious creators.",
+      p2Feat1: "Unlimited Subscribers",
+      p2Feat2: "Fiat On-Ramp (Credit Card/Apple Pay)",
+      p2Feat3: "Custom Branding Checkout",
+      p2Feat4: "1% Protocol Fee",
+      
+      p3Name: "Enterprise",
+      p3Price: "Custom",
+      p3Desc: "Custom infrastructure for DAOs and institutional scale.",
+      p3Feat1: "Fiat Off-Ramp to Bank Account",
+      p3Feat2: "API & Webhook Access",
+      p3Feat3: "Dedicated Success Manager",
+      p3Feat4: "Negotiable Volume Fee",
 
-      faqTag: "F.A.Q",
-      faqTitle: "Common Questions.",
-      faqDesc: "Everything you need to know about Axeon Protocol.",
-      faqs: [
-        { q: "Are the funds held by Axeon?", a: "No. Axeon is strictly non-custodial. All payments are routed directly to your configured Solana wallet via our smart contracts." },
-        { q: "How does Fiat (QRIS) payment work with Solana?", a: "When a user pays via QRIS, our backend payment gateway processes the Fiat and instantly auto-swaps it into USDC on the Solana network to trigger the access protocol." },
-        { q: "Do I need technical or coding knowledge to use this?", a: "Not at all. Our dashboard abstracts all the blockchain complexity. If you can manage a Telegram group, you can deploy Axeon." },
-        { q: "What happens if the bot goes offline?", a: "Your data remains safe on-chain within the PDA. Once the bot reconnects, it will automatically sync with the blockchain state and execute any pending kicks." }
-      ],
+      faqTitle: "Frequently Asked Questions",
+      faq1Q: "Do I need to know how to code to use Axeon?",
+      faq1A: "Not at all. Axeon provides a no-code dashboard to deploy your vaults and manage your community access entirely through UI.",
+      faq2Q: "How does the Fiat to Crypto gateway work?",
+      faq2A: "We integrate with top-tier payment providers (like Stripe/MoonPay). Your users pay with their Credit Card, and the funds are instantly settled into your Solana wallet as USDC.",
+      faq3Q: "Who holds the funds during transactions?",
+      faq3A: "You do. Axeon uses a zero-custody architecture. The smart contract routes payments directly from the subscriber to your wallet instantly.",
+      faq4Q: "Can I migrate my existing Telegram members?",
+      faq4A: "Yes. The Pro tier allows you to whitelist existing members or generate complimentary access passes so they bypass the initial payment screen.",
+      faq5Q: "What happens if a user's subscription expires?",
+      faq5A: "Axeon Sentinel (our Telegram Bot) constantly syncs with the Solana blockchain. The moment a user's on-chain expiry timestamp passes without renewal, the bot automatically removes them from your group.",
 
-      pricingTitle: "Transparent Pricing Model",
-      pricingSub: "Scale your community without operational bottlenecks.",
+      footProduct: "Product",
+      footCompany: "Company",
+      footLegal: "Legal",
+      footRights: "Axeon Inc. All rights reserved."
     },
     id: {
-      nav: ["Protokol", "Arsitektur", "Panduan", "Harga"],
-      badge: "Axeon V1 Mainnet Beta",
-      heroTitle1: "MONETISASI KOMUNITAS.",
-      heroTitle2: "SEPENUHNYA OTONOM.",
-      heroSub: "Axeon Protocol adalah infrastruktur tingkat institusi untuk komunitas premium. Kami menjembatani Fiat (QRIS) ke Solana, mengotomatisasi verifikasi, dan mengeksekusi pencabutan akses secara presisi via smart contract.",
-      btnStart: "Buka Dashboard",
-      btnDocs: "Baca Whitepaper",
+      navProduct: "Produk",
+      navSolutions: "Solusi",
+      navPricing: "Harga",
+      navDocs: "Developer",
+      badge: "AXEON PROTOCOL V1.0",
+      heroTitle1: "SISTEM OPERASI",
+      heroTitle2: "UNTUK KOMUNITAS",
+      heroTitle3: "PREMIUM.",
+      heroSub: "Monetisasi komunitas Telegram Anda dengan lancar. Kombinasi pembayaran kripto on-chain dan konversi Fiat (Rupiah/USD) otomatis, ditenagai oleh arsitektur zero-custody Solana.",
+      btnStart: "Mulai Sekarang",
+      btnDocs: "Baca Dokumentasi",
+      statVolDesc: "Total Volume Transaksi",
+      statComDesc: "Komunitas Aktif",
+      statUserDesc: "Pelanggan Premium",
+      trustBadge: "MENDUKUNG EKONOMI KREATOR GENERASI BERIKUTNYA",
+      howTitle: "Cara Kerja.",
+      howSub: "Dari nol hingga monetisasi dalam hitungan menit.",
+      how1: "Deploy Brankas",
+      how1Desc: "Buat brankas smart contract dalam satu klik. Tanpa perlu coding.",
+      how2: "Undang Sentinel",
+      how2Desc: "Tambahkan bot kami ke grup Telegram Anda untuk manajemen anggota otomatis.",
+      how3: "Dapatkan USDC",
+      how3Desc: "Pengguna membayar dengan kripto. Dana masuk langsung ke dompet Anda seketika.",
+      featTitle: "Skala Enterprise.",
+      featSub: "Pengalaman Pengguna.",
+      featDesc: "Semua yang Anda butuhkan untuk mengembangkan komunitas digital premium tanpa pusing memikirkan operasional.",
+      feat1Title: "Gateway Fiat ↔ Crypto Mulus",
+      feat1Desc: "Terima Kartu Kredit, Apple Pay, dan transfer bank. Axeon secara otomatis mengonversi Fiat menjadi USDC on-chain, menjembatani pengguna Web2 ke Web3 tanpa hambatan.",
+      feat2Title: "Arsitektur Zero-Custody",
+      feat2Desc: "Dana diarahkan langsung melalui Program Derived Addresses (PDA). Kami tidak pernah menahan uang Anda. Transparansi on-chain 100%.",
+      feat3Title: "Axeon Sentinel Bot",
+      feat3Desc: "Bot Telegram kami membaca data on-chain. Bot akan memberikan akses otomatis saat pembayaran selesai dan mengeluarkan member tepat saat akses kedaluwarsa.",
+      pricingTitle: "Harga Transparan.",
+      pricingSub: "Skalakan komunitas Anda dengan model bisnis yang menyesuaikan kebutuhan.",
       
-      whatTag: "Masalah & Solusi",
-      whatTitle: "Mimpi Buruk Operasional, Terpecahkan.",
-      whatDesc: "Mengelola grup Telegram berbayar secara manual memakan waktu. Axeon menstandarisasi seluruh siklus—dari pembayaran hingga pencabutan akses—secara transparan di blockchain Solana.",
-      vsOld: "Cara Lama (Manual)",
-      vsOld1: "Mengecek mutasi bank satu per satu.",
-      vsOld2: "Bukti transfer palsu & link bocor.",
-      vsOld3: "Lupa mengeluarkan member yang kedaluwarsa.",
-      vsNew: "Sistem Axeon (Otomatis)",
-      vsNew1: "Penyelesaian QRIS-ke-Stablecoin instan.",
-      vsNew2: "Verifikasi kriptografis menggunakan PDA.",
-      vsNew3: "Auto-kick presisi setiap 60 detik.",
-
-      b1Tag: "01 / Infrastruktur",
-      b1Title: "Mesin Sentinel.",
-      b1Desc: "Sistem kami sinkronisasi dengan status PDA Solana setiap 60 detik. Ini memastikan presisi keanggotaan absolut, mencabut akses tepat pada menit masa langganan habis.",
-      b2Tag: "02 / Keamanan",
-      b2Title: "Brankas Non-Kustodial.",
-      b2Desc: "Axeon tidak pernah menyentuh dana komunitas Anda. Semua pembayaran dirutekan langsung ke dompet pribadi Anda menggunakan Program Derived Addresses (PDA).",
-      b3Tag: "03 / Gerbang Pembayaran",
-      b3Title: "Hibrida Fiat & Web3.",
-      b3Desc: "Hilangkan hambatan bagi pengguna Web2. Terima pembayaran Bank/QRIS lokal yang langsung di-swap menjadi USDC di Solana, melindungi pendapatan Anda dari volatilitas.",
-      b4Tag: "04 / Otomatisasi",
-      b4Title: "Retensi Proaktif.",
-      b4Desc: "Cegah member berhenti berlangganan. Bot Sentinel mengirimkan pesan pengingat otomatis via Telegram DM dari H-3 hingga H-1 sebelum masa aktif berakhir.",
+      p1Name: "Pemula",
+      p1Price: "Gratis",
+      p1Desc: "Sempurna untuk komunitas baru yang memulai perjalanan monetisasi.",
+      p1Feat1: "Hingga 100 Pelanggan Aktif",
+      p1Feat2: "Hanya Pembayaran Kripto (USDC/SOL)",
+      p1Feat3: "Bot Sentinel Telegram Dasar",
+      p1Feat4: "Biaya Protokol 2.5%",
       
-      guideTag: "Panduan Integrasi",
-      guideTitle: "Deploy dalam Hitungan Menit.",
-      guideDesc: "Luncurkan lapisan monetisasi terdesentralisasi Anda tanpa hambatan. Dari deploy smart contract hingga integrasi Telegram dalam 4 langkah mudah.",
-      g1: "1. Deploy Brankas",
-      g1Desc: "Hubungkan dompet Solana Anda dan inisialisasi brankas PDA non-kustodial Anda melalui dashboard kami.",
-      g2: "2. Tambahkan Bot Sentinel",
-      g2Desc: "Undang Bot Axeon ke grup Telegram Anda dan berikan izin moderasi dasar.",
-      g3: "3. Bagikan Link Akses",
-      g3Desc: "Member membayar melalui tautan unik Axeon Anda menggunakan Kripto atau Fiat lokal (QRIS/Transfer Bank).",
-      g4: "4. Auto-Pilot Aktif",
-      g4Desc: "Axeon mengelola akses masuk, mengirim DM perpanjangan, dan mencabut akses otomatis saat kedaluwarsa.",
+      p2Name: "Pro",
+      p2Price: "$49",
+      p2Period: "/bln",
+      p2Desc: "Fitur lanjutan untuk komunitas yang berkembang cepat.",
+      p2Feat1: "Pelanggan Tidak Terbatas",
+      p2Feat2: "Fiat On-Ramp (Kartu Kredit/Apple Pay)",
+      p2Feat3: "Halaman Checkout Kustom",
+      p2Feat4: "Biaya Protokol 1%",
+      
+      p3Name: "Enterprise",
+      p3Price: "Kustom",
+      p3Desc: "Infrastruktur khusus skala institusi dan DAO besar.",
+      p3Feat1: "Pencairan Fiat Langsung ke Bank",
+      p3Feat2: "Akses API & Webhook Penuh",
+      p3Feat3: "Manajer Sukses Dedicated",
+      p3Feat4: "Biaya Volume Dapat Dinegosiasikan",
 
-      faqTag: "F.A.Q",
-      faqTitle: "Pertanyaan Umum.",
-      faqDesc: "Semua yang perlu Anda ketahui tentang Axeon Protocol.",
-      faqs: [
-        { q: "Apakah dana disimpan oleh Axeon?", a: "Tidak. Axeon sepenuhnya non-kustodial. Semua pembayaran dialirkan langsung ke dompet Solana yang Anda konfigurasikan melalui smart contract kami." },
-        { q: "Bagaimana cara kerja pembayaran Fiat (QRIS) dengan Solana?", a: "Saat pengguna membayar via QRIS, payment gateway backend kami memproses Fiat tersebut dan secara instan menukarnya (auto-swap) menjadi USDC di jaringan Solana untuk memicu protokol." },
-        { q: "Apakah saya butuh kemampuan coding untuk menggunakan ini?", a: "Sama sekali tidak. Dashboard kami menyederhanakan semua kerumitan blockchain. Jika Anda bisa mengelola grup Telegram, Anda bisa menggunakan Axeon." },
-        { q: "Apa yang terjadi jika bot offline/mati?", a: "Data masa aktif Anda tetap aman secara on-chain di dalam PDA. Saat bot kembali online, ia akan otomatis sinkronisasi dengan status blockchain dan mengeksekusi pengeluaran member yang tertunda." }
-      ],
+      faqTitle: "Pertanyaan Umum",
+      faq1Q: "Apakah saya harus bisa coding untuk memakai Axeon?",
+      faq1A: "Sama sekali tidak. Axeon menyediakan dashboard visual tanpa kode untuk meluncurkan brankas Anda dan mengatur komunitas sepenuhnya lewat UI.",
+      faq2Q: "Bagaimana cara kerja gateway Fiat ke Crypto?",
+      faq2A: "Kami terintegrasi dengan penyedia pembayaran global (seperti Stripe/MoonPay). Pengguna Anda bisa membayar pakai Kartu Kredit, dan dananya akan otomatis masuk ke dompet Solana Anda dalam bentuk USDC.",
+      faq3Q: "Siapa yang menahan dana saat transaksi berlangsung?",
+      faq3A: "Anda sendiri. Axeon menggunakan arsitektur zero-custody. Smart contract langsung merutekan uang dari pembeli ke dompet Anda secara instan tanpa perantara.",
+      faq4Q: "Bisa pindahin member grup Telegram saya yang lama?",
+      faq4A: "Tentu. Paket Pro memungkinkan Anda melakukan 'whitelist' untuk member lama, sehingga mereka mendapat akses tanpa harus melewati halaman pembayaran.",
+      faq5Q: "Bagaimana jika masa langganan pengguna habis?",
+      faq5A: "Axeon Sentinel (Bot Telegram kami) terus tersinkronisasi dengan blockchain Solana. Detik di mana waktu on-chain pengguna kedaluwarsa, bot akan langsung mengeluarkannya dari grup.",
 
-      pricingTitle: "Model Harga Transparan",
-      pricingSub: "Skalakan komunitas Anda tanpa hambatan operasional.",
+      footProduct: "Produk",
+      footCompany: "Perusahaan",
+      footLegal: "Legal",
+      footRights: "Axeon Inc. Hak cipta dilindungi undang-undang."
     }
   };
 
-  const navItems = [
-    { label: t[lang].nav[0], href: "#protocol" },
-    { label: t[lang].nav[1], href: "#architecture" },
-    { label: t[lang].nav[2], href: "#guide" },
-    { label: t[lang].nav[3], href: "#pricing" }
-  ];
-
-  if (!isClient) return <main className="min-h-screen bg-[#020617]" />;
+  if (!isClient) return null;
 
   return (
-    <main className="relative w-full bg-[#020617] text-zinc-100 font-sans selection:bg-cyan-500/30 overflow-x-hidden min-h-screen flex flex-col">
-      <ClickSpark sparkColor="#22d3ee" sparkSize={12} sparkRadius={24} sparkCount={10}>
-        
-        {/* ================= BACKGROUND ================= */}
-        <div className="fixed inset-0 z-0 opacity-40 pointer-events-none">
-           <DotField dotRadius={1} dotSpacing={22} glowColor="#0891b2" gradientFrom="#22d3ee" gradientTo="#020617" />
-        </div>
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-cyan-500/10 blur-[150px] rounded-full pointer-events-none -z-10" aria-hidden="true" />
+    <div className={`min-h-screen ${currentTheme === 'dark' ? 'dark bg-black' : 'bg-white'}`}>
+      <main className="relative w-full flex flex-col text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans scroll-smooth selection:bg-blue-500/30 dark:selection:bg-[#00ffcc]/30 selection:text-blue-700 dark:selection:text-[#00ffcc]">
+        <ClickSpark sparkColor={currentTheme === 'dark' ? '#00ffcc' : '#2563eb'} sparkSize={6} sparkRadius={15} sparkCount={5} easing="ease-out">
+          
+          <GridBackground />
 
-        {/* ================= HEADER ================= */}
-        <header className="fixed top-0 w-full z-50 flex justify-center pt-6 px-6">
-          <div className="w-full max-w-6xl flex items-center justify-between bg-zinc-950/70 backdrop-blur-2xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)] px-6 py-2.5 rounded-full transition-all duration-300">
-            <Link href="#" className="flex items-center gap-2 group cursor-pointer" aria-label="Home">
-              <div className="size-2.5 bg-cyan-400 rounded-sm shadow-[0_0_15px_#22d3ee]" />
-              <span className="font-black italic text-lg tracking-tighter uppercase text-white">Axeon</span>
-            </Link>
-            
-            <div className="hidden lg:block -ml-8"><GooeyNav items={navItems} /></div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex items-center bg-zinc-900/80 border border-white/5 rounded-full p-0.5">
-                <button aria-label="Switch to English" onClick={() => setLang('en')} className={`px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest transition-all ${lang === 'en' ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(34,211,238,0.3)]' : 'text-zinc-500 hover:text-white'}`}>EN</button>
-                <button aria-label="Switch to Indonesian" onClick={() => setLang('id')} className={`px-3 py-1.5 rounded-full text-[9px] font-bold tracking-widest transition-all ${lang === 'id' ? 'bg-cyan-500 text-black shadow-[0_0_10px_rgba(34,211,238,0.3)]' : 'text-zinc-500 hover:text-white'}`}>ID</button>
-              </div>
-              <Link href="/login" className="hidden sm:block px-7 py-2.5 bg-zinc-100 text-zinc-950 font-black text-[10px] uppercase tracking-widest rounded-full hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all">
-                {t[lang].btnStart}
-              </Link>
-              <button aria-label="Toggle Menu" onClick={(e) => { e.stopPropagation(); setMobileMenuOpen(!mobileMenuOpen); }} className="lg:hidden p-2 flex flex-col gap-1.5 opacity-70 hover:opacity-100 transition-opacity">
-                <div className={`h-px w-6 bg-zinc-100 transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1.75' : ''}`} />
-                <div className={`h-px w-6 bg-zinc-100 transition-all duration-300 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-                <div className={`h-px w-6 bg-zinc-100 transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-1.75' : ''}`} />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* ================= MOBILE MENU ================= */}
-        <div className={`fixed inset-0 bg-[#020617]/98 backdrop-blur-3xl transition-all duration-500 lg:hidden flex flex-col items-start justify-center px-10 space-y-8 z-40 ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
-          <span className="text-cyan-500/50 text-[10px] font-black tracking-[0.3em] uppercase mt-10 border-b border-white/10 pb-2 w-full">Navigation</span>
-          {navItems.map((item, i) => (
-            <Link key={i} href={item.href} onClick={() => setMobileMenuOpen(false)} className="text-4xl font-black italic uppercase tracking-tighter text-zinc-100 hover:text-cyan-400 transition-colors">
-              {item.label}
-            </Link>
-          ))}
-          <Link href="/login" className="mt-12 w-full py-5 bg-cyan-500 text-black shadow-[0_0_30px_rgba(34,211,238,0.3)] rounded-full font-black uppercase tracking-widest text-xs text-center">
-            {t[lang].btnStart}
-          </Link>
-        </div>
-
-        {/* ================= HERO SECTION ================= */}
-        <section className="relative z-10 w-full pt-44 lg:pt-48 px-6 flex flex-col items-center justify-center">
-          <div className="w-full max-w-5xl flex flex-col items-center text-center">
-            <div className="group flex items-center gap-3 bg-cyan-500/5 border border-cyan-500/20 px-4 py-1.5 rounded-full mb-8 backdrop-blur-md">
-              <div className="relative size-2">
-                 <span className="absolute inset-0 bg-cyan-400 rounded-full animate-ping opacity-75" />
-                 <span className="relative block size-2 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee]" />
-              </div>
-              <span className="text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em]">{t[lang].badge}</span>
-            </div>
-            
-            <h1 className="flex flex-col items-center select-none mb-8">
-              <div className="overflow-hidden pb-2" key={`h1-${lang}`}>
-                 <Shuffle text={t[lang].heroTitle1} className="text-[clamp(28px,6vw,90px)] font-black tracking-[-0.04em] leading-none text-zinc-100" />
-              </div>
-              <div className="overflow-hidden pb-4 px-4" key={`h2-${lang}`}>
-                 <Shuffle text={t[lang].heroTitle2} className="text-[clamp(28px,6vw,90px)] font-black text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-500 tracking-[-0.04em] leading-none drop-shadow-[0_0_40px_rgba(34,211,238,0.2)]" />
-              </div>
-            </h1>
-            
-            <p className="text-sm md:text-base text-zinc-400 font-medium max-w-3xl leading-relaxed mb-10 tracking-widest">
-              {t[lang].heroSub}
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto">
-              <Link href="/login" className="w-full sm:w-auto px-10 py-4 bg-cyan-500 text-black font-black text-xs uppercase tracking-[0.2em] rounded-full hover:bg-cyan-400 hover:scale-105 transition-all text-center">
-                {t[lang].btnStart}
-              </Link>
-              <button aria-label="Whitepaper" className="group w-full sm:w-auto flex items-center justify-center gap-3 px-10 py-4 bg-zinc-900/50 backdrop-blur-md border border-white/10 text-white font-black text-xs uppercase tracking-[0.2em] rounded-full hover:bg-zinc-800 transition-all">
-                {t[lang].btnDocs} <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= WHAT IS AXEON (THE PROTOCOL) ================= */}
-        <section id="protocol" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
-          <div className="text-center mb-16">
-            <span className="text-[10px] font-black text-cyan-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].whatTag}</span>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">{t[lang].whatTitle}</h2>
-            <p className="text-zinc-400 font-medium tracking-widest max-w-3xl mx-auto leading-relaxed">{t[lang].whatDesc}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-            {/* Old Way */}
-            <div className="bg-red-500/5 border border-red-500/10 rounded-[2rem] p-10 flex flex-col justify-center">
-               <div className="flex items-center gap-3 mb-8">
-                 <div className="size-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 font-black">✕</div>
-                 <h3 className="text-xl font-black text-zinc-300">{t[lang].vsOld}</h3>
-               </div>
-               <ul className="space-y-6">
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-red-500/50 rounded-full mt-2" />
-                   <p className="text-sm font-medium text-zinc-400 tracking-wider leading-relaxed">{t[lang].vsOld1}</p>
-                 </li>
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-red-500/50 rounded-full mt-2" />
-                   <p className="text-sm font-medium text-zinc-400 tracking-wider leading-relaxed">{t[lang].vsOld2}</p>
-                 </li>
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-red-500/50 rounded-full mt-2" />
-                   <p className="text-sm font-medium text-zinc-400 tracking-wider leading-relaxed">{t[lang].vsOld3}</p>
-                 </li>
-               </ul>
-            </div>
-
-            {/* Axeon Way */}
-            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-[2rem] p-10 flex flex-col justify-center shadow-[0_0_40px_rgba(34,211,238,0.05)] relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none" />
-               <div className="flex items-center gap-3 mb-8 relative z-10">
-                 <div className="size-8 rounded-full bg-cyan-500 flex items-center justify-center text-black font-black">✓</div>
-                 <h3 className="text-xl font-black text-white">{t[lang].vsNew}</h3>
-               </div>
-               <ul className="space-y-6 relative z-10">
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-cyan-400 rounded-full mt-2 shadow-[0_0_10px_#22d3ee]" />
-                   <p className="text-sm font-bold text-zinc-200 tracking-wider leading-relaxed">{t[lang].vsNew1}</p>
-                 </li>
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-cyan-400 rounded-full mt-2 shadow-[0_0_10px_#22d3ee]" />
-                   <p className="text-sm font-bold text-zinc-200 tracking-wider leading-relaxed">{t[lang].vsNew2}</p>
-                 </li>
-                 <li className="flex items-start gap-4">
-                   <div className="size-1.5 bg-cyan-400 rounded-full mt-2 shadow-[0_0_10px_#22d3ee]" />
-                   <p className="text-sm font-bold text-zinc-200 tracking-wider leading-relaxed">{t[lang].vsNew3}</p>
-                 </li>
-               </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= ARCHITECTURE BENTO GRID ================= */}
-        <section id="architecture" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 scroll-mt-20 border-t border-white/5">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-8 bg-zinc-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl flex flex-col justify-between overflow-hidden group relative hover:border-cyan-500/30 transition-all">
-               <div className="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-               <div className="relative z-10">
-                 <div className="flex items-center gap-3 mb-6">
-                   <div className="size-2 bg-cyan-500 rounded-full shadow-[0_0_10px_#22d3ee]" />
-                   <span className="text-[10px] font-black text-cyan-400 tracking-[0.4em] uppercase">{t[lang].b1Tag}</span>
-                 </div>
-                 <h2 className="text-3xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">{t[lang].b1Title}</h2>
-                 <p className="text-zinc-400 text-xs md:text-sm leading-relaxed max-w-md uppercase tracking-widest font-medium">{t[lang].b1Desc}</p>
-               </div>
-               <div className="absolute -bottom-10 -right-10 opacity-30 group-hover:opacity-100 transition-all duration-700 pointer-events-none">
-                  <svg width="300" height="300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="40" stroke="#22d3ee" strokeWidth="0.5" strokeDasharray="4 4" className="animate-[spin_20s_linear_infinite]" />
-                    <circle cx="50" cy="50" r="25" stroke="#22d3ee" strokeWidth="1" className="animate-[spin_10s_linear_infinite_reverse]" />
-                    <circle cx="50" cy="50" r="4" fill="#22d3ee" className="animate-pulse" />
-                  </svg>
-               </div>
-            </div>
-
-            <div className="md:col-span-4 bg-zinc-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl flex flex-col justify-between group relative overflow-hidden hover:border-blue-500/30 transition-colors duration-500">
-               <div className="relative z-10">
-                 <span className="text-[10px] font-black text-blue-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].b2Tag}</span>
-                 <h2 className="text-2xl font-black text-white mb-4 tracking-tight">{t[lang].b2Title}</h2>
-                 <p className="text-zinc-400 text-[10px] leading-relaxed uppercase tracking-wider font-medium">{t[lang].b2Desc}</p>
-               </div>
-               <div className="mt-8 pt-6 border-t border-white/10 bg-black/40 -mx-4 px-4 pb-4 rounded-xl font-mono text-[9px] shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
-                 <p className="text-zinc-500 mb-1">$ initialize_pda_vault</p>
-                 <p className="text-blue-400 mb-1">&gt; Status: NON_CUSTODIAL</p>
-                 <p className="text-emerald-400">&gt; Funds routed to admin_wallet</p>
-               </div>
-            </div>
-
-            <div className="md:col-span-5 bg-zinc-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl flex flex-col justify-between group relative overflow-hidden hover:border-indigo-500/30 transition-colors duration-500">
-               <div className="relative z-10">
-                 <span className="text-[10px] font-black text-indigo-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].b3Tag}</span>
-                 <h2 className="text-2xl font-black text-white mb-4 tracking-tight">{t[lang].b3Title}</h2>
-                 <p className="text-zinc-400 text-[10px] leading-relaxed uppercase tracking-wider font-medium">{t[lang].b3Desc}</p>
-               </div>
-               <div className="mt-8 flex flex-col gap-2 relative">
-                 <div className="w-full bg-zinc-950 border border-white/5 rounded-xl p-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3"><span className="text-[8px] font-black bg-zinc-800 p-1.5 rounded">IDR</span><span className="text-xs font-mono font-bold text-white">FIAT</span></div>
-                 </div>
-                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-8 bg-zinc-800 border border-white/10 rounded-full flex items-center justify-center z-10 group-hover:rotate-180 transition-transform duration-500 shadow-xl">
-                    <svg className="size-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
-                 </div>
-                 <div className="w-full bg-zinc-950 border border-white/5 rounded-xl p-4 flex justify-between items-center">
-                    <div className="flex items-center gap-3"><span className="text-[8px] font-black bg-blue-600 text-white p-1.5 rounded">USDC</span><span className="text-xs font-mono font-bold text-emerald-400">CRYPTO</span></div>
-                 </div>
-               </div>
-            </div>
-
-            <div className="md:col-span-7 bg-zinc-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-center gap-8 group relative overflow-hidden hover:border-emerald-500/30 transition-colors duration-500">
-               <div className="flex-1 relative z-10">
-                 <span className="text-[10px] font-black text-emerald-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].b4Tag}</span>
-                 <h2 className="text-3xl font-black text-white mb-4 tracking-tight">{t[lang].b4Title}</h2>
-                 <p className="text-zinc-400 text-[10px] leading-relaxed uppercase tracking-wider font-medium mb-6">{t[lang].b4Desc}</p>
-                 <div className="flex items-center gap-4 border-t border-white/10 pt-6">
-                    <div className="flex items-center gap-2"><div className="size-2 bg-emerald-400 rounded-full" /><span className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold">H-3 Warning</span></div>
-                    <div className="flex items-center gap-2"><div className="size-2 bg-emerald-400 rounded-full animate-pulse" /><span className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold">H-1 Alert</span></div>
-                 </div>
-               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= NEW: INTEGRATION GUIDE ================= */}
-        <section id="guide" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 scroll-mt-20 border-t border-white/5">
-          <div className="text-center mb-16">
-            <span className="text-[10px] font-black text-cyan-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].guideTag}</span>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">{t[lang].guideTitle}</h2>
-            <p className="text-zinc-400 font-medium tracking-widest max-w-2xl mx-auto leading-relaxed">{t[lang].guideDesc}</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Step 1 */}
-            <div className="bg-zinc-900/20 border border-white/5 p-8 rounded-[2rem] relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-              <span className="text-6xl font-black text-white/5 absolute -top-2 -right-2 group-hover:text-cyan-500/10 transition-colors">01</span>
-              <div className="relative z-10">
-                <h3 className="text-base font-black text-white mb-3 tracking-wide">{t[lang].g1}</h3>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-widest leading-relaxed">{t[lang].g1Desc}</p>
-              </div>
-            </div>
-            {/* Step 2 */}
-            <div className="bg-zinc-900/20 border border-white/5 p-8 rounded-[2rem] relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-              <span className="text-6xl font-black text-white/5 absolute -top-2 -right-2 group-hover:text-cyan-500/10 transition-colors">02</span>
-              <div className="relative z-10">
-                <h3 className="text-base font-black text-white mb-3 tracking-wide">{t[lang].g2}</h3>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-widest leading-relaxed">{t[lang].g2Desc}</p>
-              </div>
-            </div>
-            {/* Step 3 */}
-            <div className="bg-zinc-900/20 border border-white/5 p-8 rounded-[2rem] relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-              <span className="text-6xl font-black text-white/5 absolute -top-2 -right-2 group-hover:text-cyan-500/10 transition-colors">03</span>
-              <div className="relative z-10">
-                <h3 className="text-base font-black text-white mb-3 tracking-wide">{t[lang].g3}</h3>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-widest leading-relaxed">{t[lang].g3Desc}</p>
-              </div>
-            </div>
-            {/* Step 4 */}
-            <div className="bg-zinc-900/20 border border-white/5 p-8 rounded-[2rem] relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-              <span className="text-6xl font-black text-white/5 absolute -top-2 -right-2 group-hover:text-cyan-500/10 transition-colors">04</span>
-              <div className="relative z-10">
-                <h3 className="text-base font-black text-white mb-3 tracking-wide">{t[lang].g4}</h3>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-widest leading-relaxed">{t[lang].g4Desc}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= PRICING SECTION ================= */}
-        <section id="pricing" className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20 border-t border-white/5 scroll-mt-20">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">{t[lang].pricingTitle}</h2>
-            <p className="text-zinc-400 font-medium uppercase tracking-widest">{t[lang].pricingSub}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-center">
-            <div className="bg-zinc-900/20 border border-white/10 rounded-[2rem] p-8 flex flex-col hover:border-cyan-500/30 transition-colors h-full">
-              <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs mb-2">Starter</span>
-              <span className="text-3xl font-black text-white mb-6 border-b border-white/5 pb-6">Free</span>
-              <ul className="flex flex-col gap-4 mb-8 flex-1">
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• {lang === 'en' ? 'Max 50 Members' : 'Maks 50 Member'}</li>
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• Crypto Only</li>
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• 5% Tx Fee</li>
-              </ul>
-              <Link href="/login" className="w-full py-3 bg-white/5 border border-white/10 text-white rounded-full font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors text-center">Start Free</Link>
-            </div>
-
-            <div className="bg-zinc-900/60 border border-cyan-500/40 rounded-4xl p-8 flex flex-col relative overflow-hidden h-[105%] shadow-[0_0_40px_rgba(34,211,238,0.15)] z-10">
-              <div className="absolute top-0 inset-x-0 h-1 bg-linear-to-r from-cyan-400 to-blue-500" />
-              <div className="absolute top-4 right-4 bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Popular</div>
-              <span className="text-cyan-400 font-bold uppercase tracking-widest text-xs mb-2">Growth</span>
-              <div className="flex items-baseline gap-2 mb-6 border-b border-white/5 pb-6">
-                <span className="text-3xl font-black text-white">Rp 149k</span><span className="text-zinc-500 text-[10px] uppercase">/ mo</span>
-              </div>
-              <ul className="flex flex-col gap-4 mb-8 flex-1">
-                <li className="flex items-start gap-3 text-[10px] text-white font-bold uppercase tracking-widest leading-relaxed">• Unlimited Members</li>
-                <li className="flex items-start gap-3 text-[10px] text-white font-bold uppercase tracking-widest leading-relaxed">• QRIS + Crypto Gateway</li>
-                <li className="flex items-start gap-3 text-[10px] text-white font-bold uppercase tracking-widest leading-relaxed">• 60s Auto-Sweep Logic</li>
-                <li className="flex items-start gap-3 text-[10px] text-white font-bold uppercase tracking-widest leading-relaxed">• 2% Tx Fee</li>
-              </ul>
-              <Link href="/login" className="w-full py-3.5 bg-cyan-500 text-black rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-cyan-400 transition-all hover:scale-105 active:scale-95 text-center shadow-[0_0_20px_rgba(34,211,238,0.2)]">Upgrade</Link>
-            </div>
-
-            <div className="bg-zinc-900/20 border border-white/10 rounded-[2rem] p-8 flex flex-col hover:border-indigo-500/30 transition-colors h-full">
-              <span className="text-indigo-400 font-bold uppercase tracking-widest text-xs mb-2">Pro Edition</span>
-              <div className="flex items-baseline gap-2 mb-6 border-b border-white/5 pb-6">
-                <span className="text-3xl font-black text-white">Rp 399k</span><span className="text-zinc-500 text-[10px] uppercase">/ mo</span>
-              </div>
-              <ul className="flex flex-col gap-4 mb-8 flex-1">
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• Growth Features +</li>
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• Custom Bot Branding</li>
-                <li className="flex items-start gap-3 text-[10px] text-zinc-300 font-bold uppercase tracking-widest leading-relaxed">• 1% Tx Fee</li>
-              </ul>
-              <Link href="/login" className="w-full py-3 bg-white/5 border border-white/10 text-white rounded-full font-bold uppercase tracking-widest text-[10px] hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-colors text-center">Contact Sales</Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ================= NEW: F.A.Q SECTION ================= */}
-        <section id="faq" className="relative z-10 w-full max-w-4xl mx-auto px-6 py-24 border-t border-white/5">
-          <div className="text-center mb-16">
-            <span className="text-[10px] font-black text-cyan-400 tracking-[0.4em] uppercase mb-4 block">{t[lang].faqTag}</span>
-            <h2 className="text-3xl md:text-4xl font-black text-white mb-6 tracking-tight">{t[lang].faqTitle}</h2>
-            <p className="text-zinc-400 font-medium tracking-widest leading-relaxed">{t[lang].faqDesc}</p>
-          </div>
-
-          <div className="space-y-4">
-            {t[lang].faqs.map((faq, index) => (
-              <div 
-                key={index} 
-                onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                className={`bg-zinc-900/30 border border-white/5 rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:bg-zinc-900/60 ${openFaq === index ? 'border-cyan-500/30 shadow-[0_0_20px_rgba(34,211,238,0.05)]' : ''}`}
-              >
-                <div className="flex justify-between items-center gap-4">
-                  <h3 className="text-xs md:text-sm font-bold text-white tracking-wide">{faq.q}</h3>
-                  <div className={`size-6 rounded-full border border-white/10 flex items-center justify-center transition-transform duration-300 ${openFaq === index ? 'rotate-45 bg-cyan-500 text-black border-cyan-500' : 'text-zinc-400'}`}>
-                    <span className="font-mono leading-none mb-0.5">+</span>
-                  </div>
+          {/* ================= FULL NAVBAR ================= */}
+          <nav className="fixed top-0 w-full z-50 border-b border-zinc-200 dark:border-white/5 bg-white/70 dark:bg-black/70 backdrop-blur-xl transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+              
+              <div className="flex items-center gap-10">
+                <Link href="/" className="flex items-center gap-3 cursor-pointer group">
+                  <div className="size-2.5 bg-blue-600 dark:bg-[#00ffcc] shadow-[0_0_10px_rgba(37,99,235,0.5)] dark:shadow-[0_0_10px_#00ffcc] group-hover:scale-110 transition-transform" />
+                  <span className="font-bold tracking-widest text-xs text-zinc-900 dark:text-white transition-colors">AXEON</span>
+                </Link>
+                
+                <div className="hidden lg:flex items-center gap-6">
+                  <a href="#product" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navProduct}</a>
+                  <a href="#solutions" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navSolutions}</a>
+                  <a href="#pricing" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navPricing}</a>
+                  <Link href="/docs" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navDocs}</Link>
                 </div>
-                <div className={`grid transition-all duration-300 ${openFaq === index ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0'}`}>
-                  <div className="overflow-hidden">
-                    <p className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest leading-relaxed">{faq.a}</p>
+              </div>
+              
+              <div className="flex items-center gap-4 md:gap-6">
+                <button 
+                  onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')} 
+                  aria-label="Toggle Theme" 
+                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500 dark:text-zinc-400 z-10"
+                >
+                  {currentTheme === 'dark' ? (
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                  ) : (
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                  )}
+                </button>
+
+                <div className="flex items-center bg-zinc-100 dark:bg-zinc-900/80 p-1 rounded border border-zinc-200 dark:border-white/5 transition-colors z-10">
+                  <button onClick={() => setLang('en')} className={`px-2.5 py-1 font-mono text-[9px] font-bold tracking-widest transition-colors rounded-sm ${lang === 'en' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-[#00ffcc] shadow-sm' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-white'}`}>EN</button>
+                  <button onClick={() => setLang('id')} className={`px-2.5 py-1 font-mono text-[9px] font-bold tracking-widest transition-colors rounded-sm ${lang === 'id' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-[#00ffcc] shadow-sm' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-white'}`}>ID</button>
+                </div>
+                
+                <Link href="/login" className="px-5 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[10px] font-mono uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-[#00ffcc] transition-colors rounded-sm shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.1)] z-10">
+                  Dashboard &rarr;
+                </Link>
+              </div>
+            </div>
+          </nav>
+
+          {/* ================= HERO SECTION ================= */}
+          <section className="relative w-full pt-32 pb-20 px-6 flex items-center min-h-[90vh] max-w-7xl mx-auto z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-10 w-full items-center">
+              
+              <div className="col-span-1 lg:col-span-7 flex flex-col items-start text-left z-10">
+                <div className="flex items-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm dark:shadow-none px-3 py-1.5 rounded-full mb-8 transition-colors">
+                  <div className="size-1.5 bg-blue-600 dark:bg-[#00ffcc] rounded-full animate-pulse" />
+                  <span className="font-mono text-[9px] text-zinc-600 dark:text-zinc-300 tracking-widest uppercase">{t[lang].badge}</span>
+                </div>
+                
+                <h1 className="flex flex-col text-left mb-8 w-full">
+                  <div className="overflow-hidden pb-1">
+                     <Shuffle text={t[lang].heroTitle1} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-900 dark:text-white" />
+                  </div>
+                  <div className="overflow-hidden pb-1">
+                     <Shuffle text={t[lang].heroTitle2} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-400 dark:text-zinc-500" />
+                  </div>
+                  <div className="overflow-hidden pb-1">
+                     <Shuffle text={t[lang].heroTitle3} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-900 dark:text-white" />
+                  </div>
+                </h1>
+                
+                <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-xl leading-relaxed mb-10">
+                  {t[lang].heroSub}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                  <Link href="/login" className="w-full sm:w-auto px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[11px] font-mono uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-[#00ffcc] transition-all text-center rounded shadow-lg flex items-center justify-center gap-3">
+                    {t[lang].btnStart}
+                  </Link>
+                  <Link href="/docs" className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-bold text-[11px] font-mono uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all text-center rounded shadow-sm dark:shadow-none">
+                    {t[lang].btnDocs}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Dynamic Live Activity Graphic */}
+              <div className="col-span-1 lg:col-span-5 w-full relative hidden md:block">
+                <div className="bg-white/80 dark:bg-[#080808]/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 relative shadow-2xl transition-colors">
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                     <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Live Network Activity</span>
+                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  </div>
+                  <div className="space-y-4">
+                     {activities.map((act) => (
+                       <div key={act.id} className="flex items-center gap-4 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-2 duration-500">
+                         <div className={`size-8 rounded-full flex items-center justify-center ${act.currency === 'USD' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                         </div>
+                         <div className="flex-1">
+                           <div className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{act.type}</div>
+                           <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{act.time}</div>
+                         </div>
+                         <div className="text-right">
+                           <span className={`text-xs font-mono font-bold ${act.currency === 'USD' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-[#00ffcc]'}`}>
+                             {act.amount} {act.currency}
+                           </span>
+                         </div>
+                       </div>
+                     ))}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* ================= FOOTER ================= */}
-        <footer className="relative z-10 border-t border-white/5 bg-zinc-950/80 backdrop-blur-2xl w-full flex justify-center py-10 px-6 mt-auto">
-          <div className="w-full max-w-7xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-col gap-1 items-center md:items-start">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="size-2 bg-cyan-500 rounded-sm" />
-                <span className="font-black italic text-sm tracking-tighter uppercase text-white">Axeon</span>
+            </div>
+          </section>
+
+          {/* ================= REALTIME STATS BANNER ================= */}
+          <section className="relative z-10 border-y border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-[#020202]/90 backdrop-blur-md py-12 transition-colors">
+             <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">{t[lang].trustBadge}</span>
+             </div>
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800">
+               <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
+                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">
+                   ${stats.vol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                 </span>
+                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t[lang].statVolDesc}</span>
+               </div>
+               <div className="flex flex-col items-center justify-center pt-8 md:pt-0">
+                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">
+                   {stats.com.toLocaleString('en-US')}
+                 </span>
+                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t[lang].statComDesc}</span>
+               </div>
+               <div className="flex flex-col items-center justify-center pt-8 md:pt-0">
+                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">
+                   {stats.user.toLocaleString('en-US')}
+                 </span>
+                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t[lang].statUserDesc}</span>
+               </div>
+            </div>
+          </section>
+
+          {/* ================= HOW IT WORKS (PRODUCT) ================= */}
+          <section id="product" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t[lang].howTitle}</h2>
+              <p className="text-sm md:text-base text-zinc-500 max-w-2xl mx-auto">{t[lang].howSub}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { step: "01", title: t[lang].how1, desc: t[lang].how1Desc },
+                { step: "02", title: t[lang].how2, desc: t[lang].how2Desc },
+                { step: "03", title: t[lang].how3, desc: t[lang].how3Desc }
+              ].map((item, i) => (
+                <div key={i} className="relative p-8 bg-white dark:bg-[#050505] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none transition-colors group">
+                  <span className="absolute -top-6 -left-2 text-6xl font-bold text-zinc-100 dark:text-zinc-900/50 group-hover:text-blue-50 dark:group-hover:text-[#00ffcc]/10 transition-colors z-0">
+                    {item.step}
+                  </span>
+                  <div className="relative z-10 mt-4">
+                    <h3 className="text-xl font-bold mb-3 text-zinc-900 dark:text-white">{item.title}</h3>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ================= FEATURES: FIAT & CRYPTO (SOLUTIONS) ================= */}
+          <section id="solutions" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16 border-t border-zinc-200 dark:border-white/5 transition-colors">
+            <div className="mb-16 text-center md:text-left">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">
+                {t[lang].featTitle} <span className="text-zinc-400 dark:text-zinc-500">{t[lang].featSub}</span>
+              </h2>
+              <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed mx-auto md:mx-0">
+                {t[lang].featDesc}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 p-8 rounded-xl shadow-sm dark:shadow-none hover:border-blue-300 dark:hover:border-zinc-600 transition-colors group">
+                <div className="size-12 rounded-xl bg-blue-50 dark:bg-zinc-900 border border-blue-100 dark:border-zinc-800 flex items-center justify-center mb-6 group-hover:border-blue-400 dark:group-hover:border-[#00ffcc] transition-colors">
+                  <svg className="size-6 text-blue-600 dark:text-zinc-400 dark:group-hover:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                </div>
+                <h3 className="font-bold text-lg mb-3 text-zinc-900 dark:text-white">{t[lang].feat1Title}</h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].feat1Desc}</p>
               </div>
-              <span className="text-[9px] font-bold tracking-widest text-zinc-500 uppercase">© 2026 Axeon Infrastructure</span>
+              <div className="bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 p-8 rounded-xl shadow-sm dark:shadow-none hover:border-blue-300 dark:hover:border-zinc-600 transition-colors group">
+                <div className="size-12 rounded-xl bg-blue-50 dark:bg-zinc-900 border border-blue-100 dark:border-zinc-800 flex items-center justify-center mb-6 group-hover:border-blue-400 dark:group-hover:border-[#00ffcc] transition-colors">
+                  <svg className="size-6 text-blue-600 dark:text-zinc-400 dark:group-hover:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                </div>
+                <h3 className="font-bold text-lg mb-3 text-zinc-900 dark:text-white">{t[lang].feat2Title}</h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].feat2Desc}</p>
+              </div>
+              <div className="bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 p-8 rounded-xl shadow-sm dark:shadow-none hover:border-blue-300 dark:hover:border-zinc-600 transition-colors group">
+                <div className="size-12 rounded-xl bg-blue-50 dark:bg-zinc-900 border border-blue-100 dark:border-zinc-800 flex items-center justify-center mb-6 group-hover:border-blue-400 dark:group-hover:border-[#00ffcc] transition-colors">
+                  <svg className="size-6 text-blue-600 dark:text-zinc-400 dark:group-hover:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l3 3-3 3m5 0h3M4 17h16a2 2 0 002-2V9a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>
+                </div>
+                <h3 className="font-bold text-lg mb-3 text-zinc-900 dark:text-white">{t[lang].feat3Title}</h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].feat3Desc}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-8">
-              <Link href="/login" className="text-[10px] font-black tracking-widest text-zinc-500 hover:text-cyan-400 uppercase transition-colors">Admin Portal</Link>
-              <a href="#" className="text-[10px] font-black tracking-widest text-zinc-500 hover:text-cyan-400 uppercase transition-colors">Documentation</a>
-            </div>
-          </div>
-        </footer>
+          </section>
 
-      </ClickSpark>
-    </main>
+          {/* ================= PRICING TIERS ================= */}
+          <section id="pricing" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-zinc-200 dark:border-white/5 scroll-mt-16 transition-colors">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t[lang].pricingTitle}</h2>
+              <p className="text-sm md:text-base text-zinc-500 max-w-2xl mx-auto">{t[lang].pricingSub}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm dark:shadow-none flex flex-col">
+                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">{t[lang].p1Name}</h3>
+                <p className="text-sm text-zinc-500 mb-6 min-h-10">{t[lang].p1Desc}</p>
+                <div className="mb-8">
+                  <span className="text-4xl font-bold text-zinc-900 dark:text-white">{t[lang].p1Price}</span>
+                </div>
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[t[lang].p1Feat1, t[lang].p1Feat2, t[lang].p1Feat3, t[lang].p1Feat4].map((feat, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300">
+                      <svg className="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded">
+                  Deploy Free Vault
+                </Link>
+              </div>
+
+              <div className="p-8 bg-blue-50 dark:bg-[#050505] border-2 border-blue-600 dark:border-[#00ffcc] rounded-2xl shadow-xl flex flex-col relative transform md:-translate-y-4">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full">
+                  Most Popular
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-blue-900 dark:text-white">{t[lang].p2Name}</h3>
+                <p className="text-sm text-blue-700/80 dark:text-zinc-400 mb-6 min-h-10">{t[lang].p2Desc}</p>
+                <div className="mb-8">
+                  <span className="text-4xl font-bold text-blue-900 dark:text-white">{t[lang].p2Price}</span>
+                  <span className="text-sm text-blue-700/80 dark:text-zinc-500">{t[lang].p2Period}</span>
+                </div>
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[t[lang].p2Feat1, t[lang].p2Feat2, t[lang].p2Feat3, t[lang].p2Feat4].map((feat, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-blue-900 dark:text-zinc-200">
+                      <svg className="size-4 text-blue-600 dark:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/login" className="w-full py-3 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-xs uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-[#00e6b8] transition-colors text-center rounded shadow-lg">
+                  Upgrade to Pro
+                </Link>
+              </div>
+
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm dark:shadow-none flex flex-col">
+                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">{t[lang].p3Name}</h3>
+                <p className="text-sm text-zinc-500 mb-6 min-h-10">{t[lang].p3Desc}</p>
+                <div className="mb-8">
+                  <span className="text-4xl font-bold text-zinc-900 dark:text-white">{t[lang].p3Price}</span>
+                </div>
+                <ul className="space-y-4 mb-8 flex-1">
+                  {[t[lang].p3Feat1, t[lang].p3Feat2, t[lang].p3Feat3, t[lang].p3Feat4].map((feat, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300">
+                      <svg className="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+                <button className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded">
+                  Contact Sales
+                </button>
+              </div>
+
+            </div>
+          </section>
+
+          {/* ================= EXPANDED FAQ SECTION ================= */}
+          <section className="py-24 px-6 max-w-4xl mx-auto border-t border-zinc-200 dark:border-white/5 transition-colors">
+            <h2 className="text-3xl font-bold mb-12 tracking-tight text-center text-zinc-900 dark:text-white">{t[lang].faqTitle}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none">
+                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t[lang].faq1Q}</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].faq1A}</p>
+              </div>
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none">
+                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t[lang].faq2Q}</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].faq2A}</p>
+              </div>
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none">
+                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t[lang].faq3Q}</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].faq3A}</p>
+              </div>
+              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none">
+                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t[lang].faq5Q}</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].faq5A}</p>
+              </div>
+              <div className="md:col-span-2 p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none">
+                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t[lang].faq4Q}</h4>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t[lang].faq4A}</p>
+              </div>
+            </div>
+          </section>
+
+          {/* ================= FOOTER ================= */}
+          <footer className="relative z-10 w-full bg-zinc-100 dark:bg-[#030303] pt-16 pb-8 px-6 transition-colors">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-16">
+                
+                <div className="col-span-2 md:col-span-2">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="size-2.5 bg-blue-600 dark:bg-[#00ffcc] shadow-[0_0_10px_rgba(37,99,235,0.5)] dark:shadow-[0_0_10px_#00ffcc]" />
+                    <span className="font-bold tracking-widest text-xs text-zinc-900 dark:text-white">AXEON</span>
+                  </div>
+                  <p className="text-sm text-zinc-500 max-w-sm leading-relaxed mb-6">
+                    The operating system for the next generation of premium digital communities. 
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t[lang].footProduct}</h4>
+                  <ul className="space-y-4 text-sm text-zinc-500">
+                    <li><Link href="/docs" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Documentation</Link></li>
+                    <li><a href="#pricing" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Pricing</a></li>
+                    <li><Link href="/changelog" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Changelog</Link></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t[lang].footCompany}</h4>
+                  <ul className="space-y-4 text-sm text-zinc-500">
+                    <li><Link href="/about" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">About Us</Link></li>
+                    <li><Link href="/careers" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Careers</Link></li>
+                    <li><Link href="/blog" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Blog</Link></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t[lang].footLegal}</h4>
+                  <ul className="space-y-4 text-sm text-zinc-500">
+                    <li><Link href="/privacy" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Privacy Policy</Link></li>
+                    <li><Link href="/terms" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Terms of Service</Link></li>
+                    <li><Link href="/security" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">Security</Link></li>
+                  </ul>
+                </div>
+
+              </div>
+
+              <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                <span className="text-xs text-zinc-500">
+                  &copy; {new Date().getFullYear()} {t[lang].footRights}
+                </span>
+                <div className="flex gap-4">
+                  <a href="#" aria-label="Twitter" className="text-zinc-400 hover:text-blue-600 dark:hover:text-white transition-colors">
+                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+                  </a>
+                  <a href="https://github.com/NaufalAufaaAbyan/Axeon-Management-Protocol" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-zinc-400 hover:text-blue-600 dark:hover:text-white transition-colors">
+                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </footer>
+
+        </ClickSpark>
+      </main>
+    </div>
   );
 }

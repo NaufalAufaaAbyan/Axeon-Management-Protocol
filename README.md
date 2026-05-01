@@ -53,6 +53,8 @@ cd contract
 anchor build
 solana program deploy target/deploy/contract.so
 
+---
+
 ### **B. Backend Bot**
 ```bash
 cd backend

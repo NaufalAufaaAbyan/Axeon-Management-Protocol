@@ -1,94 +1,89 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-// IMPORT SOLANA WALLET HOOKS
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
-import toast from 'react-hot-toast';
-
-const DotField = dynamic(() => import('../components/magic/DotField'), { ssr: false });
+import { useAxeonStore } from '../../store/useAxeonStore';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const [isClient, setIsClient] = useState(false);
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
+  const [isLoading, setIsLoading] = useState(false);
+  const login = useAxeonStore((state) => state.login);
   const router = useRouter();
-
-  // HOOKS WEB3
-  const { connected, connecting } = useWallet();
-  const { setVisible } = useWalletModal();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setIsClient(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // LOGIKA REDIRECT OTOMATIS SAAT DOMPET CONNECTED
-  useEffect(() => {
-    if (connected) {
-      toast.success("Wallet Connected!");
-      router.push(`/dashboard/${role}`);
-    }
-  }, [connected, router, role]);
+  const handleSimulateLogin = (roleType: 'admin' | 'subscriber') => {
+    setIsLoading(true);
+    
+    const toastId = toast.loading('Connecting to Solana Devnet...');
 
-  const handleEmailLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.error("Email login is disabled in Beta.");
+    setTimeout(() => {
+      login(roleType, '7xkx...3a9B', roleType === 'admin' ? 1 : 0);
+      
+      toast.success('Wallet connected successfully!', { id: toastId });
+      
+      if (roleType === 'admin') {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard/user');
+      }
+    }, 1500);
   };
 
-  if (!isClient) return <main className="min-h-screen bg-[#020617]" />;
+  if (!isClient) return null;
 
   return (
-    <main className="relative min-h-screen w-full bg-[#020617] text-zinc-100 font-sans flex items-center justify-center p-6 selection:bg-cyan-500/30 overflow-hidden">
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-         <DotField dotRadius={1.5} dotSpacing={24} glowColor="#0891b2" gradientFrom="#22d3ee" gradientTo="#020617" />
-      </div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none z-0" />
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#050505] p-6">
+      
+      <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
+        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+        RETURN TO HOME
+      </Link>
 
-      <div className="relative z-10 w-full max-w-md bg-zinc-900/40 backdrop-blur-2xl border border-white/10 rounded-4xl p-8 md:p-10 shadow-2xl animate-in fade-in zoom-in-95 duration-500">
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-            <div className="size-3 bg-cyan-400 rounded-sm shadow-[0_0_15px_#22d3ee] group-hover:scale-110 transition-transform" />
-            <span className="font-black italic text-2xl tracking-tighter uppercase text-white">Axeon</span>
-          </Link>
+      <div className="w-full max-w-md bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 to-blue-400 dark:from-[#00ffcc] dark:to-emerald-400" />
+        
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="size-3 bg-blue-600 dark:bg-[#00ffcc] shadow-[0_0_15px_rgba(37,99,235,0.5)] dark:shadow-[0_0_15px_#00ffcc]" />
+          <h2 className="text-2xl font-bold tracking-widest text-zinc-900 dark:text-white">AXEON</h2>
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-black text-white tracking-tight mb-2">Welcome Back.</h1>
-          <p className="text-xs text-zinc-400 uppercase tracking-widest font-medium">Log in to your dashboard</p>
-        </div>
+        <p className="text-center text-sm text-zinc-500 mb-10">Select your environment to continue testing the protocol.</p>
 
-        <div className="flex items-center bg-black/50 border border-white/5 rounded-xl p-1 mb-8 relative">
-          <div className={`absolute inset-y-1 w-[calc(50%-4px)] bg-zinc-800 rounded-lg transition-all duration-300 ease-out shadow-sm ${role === 'admin' ? 'left-[calc(50%+2px)]' : 'left-1'}`} />
-          <button type="button" onClick={() => setRole('user')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest relative z-10 transition-colors ${role === 'user' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Member Login</button>
-          <button type="button" onClick={() => setRole('admin')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest relative z-10 transition-colors ${role === 'admin' ? 'text-cyan-400' : 'text-zinc-500 hover:text-zinc-300'}`}>Admin Login</button>
-        </div>
-
-        {/* TOMBOL CONNECT WALLET ASLI */}
-        <button 
-          onClick={() => setVisible(true)} 
-          disabled={connecting}
-          className="w-full py-3.5 bg-zinc-100 text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all flex items-center justify-center gap-3 mb-6 disabled:opacity-50"
-        >
-          <svg className="size-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5C3.89543 7 3 7.89543 3 9V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 14C16.5523 14 17 13.5523 17 13C17 12.4477 16.5523 12 16 12C15.4477 12 15 12.4477 15 13C15 13.5523 15.4477 14 16 14Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M19 7V5C19 3.89543 18.1046 3 17 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          {connecting ? "Connecting..." : "Connect Solana Wallet"}
-        </button>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="h-px flex-1 bg-white/10" />
-          <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Or continue with email</span>
-          <div className="h-px flex-1 bg-white/10" />
-        </div>
-
-        <form onSubmit={handleEmailLogin} className="flex flex-col gap-4">
-          <input aria-label="Email Address" type="email" required placeholder="name@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 transition-colors" />
-          <button type="submit" className="w-full py-3.5 bg-zinc-900 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-zinc-800 hover:border-white/20 transition-all flex items-center justify-center gap-2">
-            Send Magic Link
+        <div className="space-y-4">
+          <button 
+            onClick={() => handleSimulateLogin('admin')}
+            disabled={isLoading}
+            className="w-full relative group bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl flex items-center justify-between hover:border-blue-500 dark:hover:border-[#00ffcc] transition-all overflow-hidden disabled:opacity-50"
+          >
+            {/* FIX: Mengubah translate-x-[-100%] menjadi -translate-x-full */}
+            <div className="absolute inset-0 bg-blue-500/5 dark:bg-[#00ffcc]/5 -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+            <div className="relative z-10 text-left">
+              <h3 className="font-bold text-zinc-900 dark:text-white mb-1">Creator Dashboard</h3>
+              <p className="text-xs text-zinc-500">Deploy vaults, manage tiers, and view analytics.</p>
+            </div>
+            <svg className="size-5 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-[#00ffcc] relative z-10 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           </button>
-        </form>
+
+          <button 
+            onClick={() => handleSimulateLogin('subscriber')}
+            disabled={isLoading}
+            className="w-full relative group bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl flex items-center justify-between hover:border-emerald-500 dark:hover:border-emerald-400 transition-all overflow-hidden disabled:opacity-50"
+          >
+            {/* FIX: Mengubah translate-x-[-100%] menjadi -translate-x-full */}
+            <div className="absolute inset-0 bg-emerald-500/5 dark:bg-emerald-400/5 -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+            <div className="relative z-10 text-left">
+              <h3 className="font-bold text-zinc-900 dark:text-white mb-1">Subscriber Portal</h3>
+              <p className="text-xs text-zinc-500">Manage your active subscriptions and access passes.</p>
+            </div>
+            <svg className="size-5 text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 relative z-10 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+          </button>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
