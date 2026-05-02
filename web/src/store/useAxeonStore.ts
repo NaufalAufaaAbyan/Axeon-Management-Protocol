@@ -1,16 +1,16 @@
 import { create } from 'zustand';
 
-// Mendefinisikan tipe data untuk state aplikasi
 interface AxeonState {
   isAuthenticated: boolean;
   role: 'guest' | 'admin' | 'subscriber';
-  tier: 0 | 1 | 2; // 0 = Starter, 1 = Pro, 2 = Enterprise
+  tier: 0 | 1 | 2;
   walletAddress: string | null;
+  lang: 'en' | 'id'; // Global Language State
   
-  // Actions
   login: (role: 'admin' | 'subscriber', address: string, tier?: 0 | 1 | 2) => void;
   logout: () => void;
   upgradeTier: (newTier: 1 | 2) => void;
+  setLang: (lang: 'en' | 'id') => void;
 }
 
 export const useAxeonStore = create<AxeonState>((set) => ({
@@ -18,6 +18,7 @@ export const useAxeonStore = create<AxeonState>((set) => ({
   role: 'guest',
   tier: 0,
   walletAddress: null,
+  lang: 'en', // Default ke English
 
   login: (role, address, tier = 0) => set({ 
     isAuthenticated: true, 
@@ -34,4 +35,6 @@ export const useAxeonStore = create<AxeonState>((set) => ({
   }),
   
   upgradeTier: (newTier) => set({ tier: newTier }),
+  
+  setLang: (lang) => set({ lang }),
 }));

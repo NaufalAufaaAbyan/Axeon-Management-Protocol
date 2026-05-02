@@ -2,27 +2,26 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useAxeonStore } from '../store/useAxeonStore';
 import Shuffle from '../components/magic/Shuffle';
 import ClickSpark from '../components/magic/ClickSpark';
 import GridBackground from '../components/magic/GridBackground';
 
-type Lang = 'en' | 'id';
-
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  const [lang, setLang] = useState<Lang>('en');
+  const { theme, systemTheme } = useTheme();
   
-  const { theme, setTheme, systemTheme } = useTheme();
+  // Ambil bahasa dari Global State
+  const { lang } = useAxeonStore();
 
   const [stats, setStats] = useState({ vol: 10452300.50, com: 2405, user: 150240 });
   const [activities, setActivities] = useState([
-    { id: 1, type: 'Subscription', amount: '+ 25.00', currency: 'USDC', time: 'Just now' },
-    { id: 2, type: 'Fiat On-Ramp', amount: '+ 50.00', currency: 'USD', time: '2s ago' },
-    { id: 3, type: 'Renewal Sweep', amount: '+ 10.00', currency: 'USDC', time: '5s ago' },
+    { id: 1, type: 'Subscription', amount: '+ 25.00', currency: 'USDC', time: 'new' },
+    { id: 2, type: 'Fiat On-Ramp', amount: '+ 50.00', currency: 'USD', time: 'old1' },
+    { id: 3, type: 'Renewal Sweep', amount: '+ 10.00', currency: 'USDC', time: 'old2' },
   ]);
 
   useEffect(() => {
-    // FIX: Menggunakan requestAnimationFrame agar tidak memicu error synchronous setState
     const frame = requestAnimationFrame(() => setIsClient(true));
 
     const statsInterval = setInterval(() => {
@@ -41,12 +40,12 @@ export default function Home() {
         type: activityTypes[Math.floor(Math.random() * activityTypes.length)],
         amount: `+ ${(Math.random() * 100).toFixed(2)}`,
         currency: currencies[Math.floor(Math.random() * currencies.length)],
-        time: 'Just now'
+        time: 'new'
       };
       setActivities(prev => {
         const updated = [newActivity, ...prev].map((act, idx) => {
-          if (idx === 1) return { ...act, time: '2s ago' };
-          if (idx === 2) return { ...act, time: '5s ago' };
+          if (idx === 1) return { ...act, time: 'old1' };
+          if (idx === 2) return { ...act, time: 'old2' };
           return act;
         });
         return updated.slice(0, 3);
@@ -64,10 +63,6 @@ export default function Home() {
 
   const t = {
     en: {
-      navProduct: "Product",
-      navSolutions: "Solutions",
-      navPricing: "Pricing",
-      navDocs: "Developers",
       badge: "AXEON PROTOCOL V1.0",
       heroTitle1: "THE OPERATING",
       heroTitle2: "SYSTEM FOR",
@@ -75,6 +70,10 @@ export default function Home() {
       heroSub: "Monetize your Telegram and Discord communities seamlessly. Native crypto routing combined with robust Fiat on/off-ramps, powered by Solana's zero-custody infrastructure.",
       btnStart: "Start Building",
       btnDocs: "Read Documentation",
+      liveActivity: "Live Network Activity",
+      timeNew: "Just now",
+      timeOld1: "2s ago",
+      timeOld2: "5s ago",
       statVolDesc: "Total Volume Routed",
       statComDesc: "Active Communities",
       statUserDesc: "Premium Subscribers",
@@ -98,7 +97,6 @@ export default function Home() {
       feat3Desc: "Our Telegram bot listens to on-chain events. It automatically grants access upon payment and kicks members when their PDA expires.",
       pricingTitle: "Transparent Pricing.",
       pricingSub: "Scale your community with a model that grows with you.",
-      
       p1Name: "Starter",
       p1Price: "Free",
       p1Desc: "Perfect for new communities starting their monetization journey.",
@@ -106,7 +104,8 @@ export default function Home() {
       p1Feat2: "Crypto Payments Only (USDC/SOL)",
       p1Feat3: "Basic Sentinel Telegram Bot",
       p1Feat4: "2.5% Protocol Fee",
-      
+      btnFree: "Deploy Free Vault",
+      badgePopular: "Most Popular",
       p2Name: "Pro",
       p2Price: "$49",
       p2Period: "/mo",
@@ -115,7 +114,7 @@ export default function Home() {
       p2Feat2: "Fiat On-Ramp (Credit Card/Apple Pay)",
       p2Feat3: "Custom Branding Checkout",
       p2Feat4: "1% Protocol Fee",
-      
+      btnPro: "Upgrade to Pro",
       p3Name: "Enterprise",
       p3Price: "Custom",
       p3Desc: "Custom infrastructure for DAOs and institutional scale.",
@@ -123,7 +122,7 @@ export default function Home() {
       p3Feat2: "API & Webhook Access",
       p3Feat3: "Dedicated Success Manager",
       p3Feat4: "Negotiable Volume Fee",
-
+      btnEnterprise: "Contact Sales",
       faqTitle: "Frequently Asked Questions",
       faq1Q: "Do I need to know how to code to use Axeon?",
       faq1A: "Not at all. Axeon provides a no-code dashboard to deploy your vaults and manage your community access entirely through UI.",
@@ -135,24 +134,23 @@ export default function Home() {
       faq4A: "Yes. The Pro tier allows you to whitelist existing members or generate complimentary access passes so they bypass the initial payment screen.",
       faq5Q: "What happens if a user's subscription expires?",
       faq5A: "Axeon Sentinel (our Telegram Bot) constantly syncs with the Solana blockchain. The moment a user's on-chain expiry timestamp passes without renewal, the bot automatically removes them from your group.",
-
       footProduct: "Product",
       footCompany: "Company",
       footLegal: "Legal",
       footRights: "Axeon Inc. All rights reserved."
     },
     id: {
-      navProduct: "Produk",
-      navSolutions: "Solusi",
-      navPricing: "Harga",
-      navDocs: "Developer",
       badge: "AXEON PROTOCOL V1.0",
       heroTitle1: "SISTEM OPERASI",
       heroTitle2: "UNTUK KOMUNITAS",
       heroTitle3: "PREMIUM.",
-      heroSub: "Monetisasi komunitas Telegram Anda dengan lancar. Kombinasi pembayaran kripto on-chain dan konversi Fiat (Rupiah/USD) otomatis, ditenagai oleh arsitektur zero-custody Solana.",
+      heroSub: "Monetisasi komunitas Telegram Anda dengan lancar. Kombinasi pembayaran kripto on-chain dan konversi Fiat otomatis, ditenagai oleh arsitektur zero-custody Solana.",
       btnStart: "Mulai Sekarang",
       btnDocs: "Baca Dokumentasi",
+      liveActivity: "Aktivitas Jaringan Live",
+      timeNew: "Baru saja",
+      timeOld1: "2d lalu",
+      timeOld2: "5d lalu",
       statVolDesc: "Total Volume Transaksi",
       statComDesc: "Komunitas Aktif",
       statUserDesc: "Pelanggan Premium",
@@ -169,14 +167,13 @@ export default function Home() {
       featSub: "Pengalaman Pengguna.",
       featDesc: "Semua yang Anda butuhkan untuk mengembangkan komunitas digital premium tanpa pusing memikirkan operasional.",
       feat1Title: "Gateway Fiat ↔ Crypto Mulus",
-      feat1Desc: "Terima Kartu Kredit, Apple Pay, dan transfer bank. Axeon secara otomatis mengonversi Fiat menjadi USDC on-chain, menjembatani pengguna Web2 ke Web3 tanpa hambatan.",
+      feat1Desc: "Terima Kartu Kredit, Apple Pay, dan transfer bank. Axeon mengonversi Fiat menjadi USDC on-chain, menjembatani pengguna Web2 ke Web3 tanpa hambatan.",
       feat2Title: "Arsitektur Zero-Custody",
       feat2Desc: "Dana diarahkan langsung melalui Program Derived Addresses (PDA). Kami tidak pernah menahan uang Anda. Transparansi on-chain 100%.",
       feat3Title: "Axeon Sentinel Bot",
-      feat3Desc: "Bot Telegram kami membaca data on-chain. Bot akan memberikan akses otomatis saat pembayaran selesai dan mengeluarkan member tepat saat akses kedaluwarsa.",
+      feat3Desc: "Bot Telegram kami membaca data on-chain. Bot akan memberikan akses otomatis saat pembayaran selesai dan mengeluarkan member saat akses kedaluwarsa.",
       pricingTitle: "Harga Transparan.",
       pricingSub: "Skalakan komunitas Anda dengan model bisnis yang menyesuaikan kebutuhan.",
-      
       p1Name: "Pemula",
       p1Price: "Gratis",
       p1Desc: "Sempurna untuk komunitas baru yang memulai perjalanan monetisasi.",
@@ -184,7 +181,8 @@ export default function Home() {
       p1Feat2: "Hanya Pembayaran Kripto (USDC/SOL)",
       p1Feat3: "Bot Sentinel Telegram Dasar",
       p1Feat4: "Biaya Protokol 2.5%",
-      
+      btnFree: "Gunakan Brankas Gratis",
+      badgePopular: "Paling Populer",
       p2Name: "Pro",
       p2Price: "$49",
       p2Period: "/bln",
@@ -193,7 +191,7 @@ export default function Home() {
       p2Feat2: "Fiat On-Ramp (Kartu Kredit/Apple Pay)",
       p2Feat3: "Halaman Checkout Kustom",
       p2Feat4: "Biaya Protokol 1%",
-      
+      btnPro: "Tingkatkan ke Pro",
       p3Name: "Enterprise",
       p3Price: "Kustom",
       p3Desc: "Infrastruktur khusus skala institusi dan DAO besar.",
@@ -201,19 +199,18 @@ export default function Home() {
       p3Feat2: "Akses API & Webhook Penuh",
       p3Feat3: "Manajer Sukses Dedicated",
       p3Feat4: "Biaya Volume Dapat Dinegosiasikan",
-
+      btnEnterprise: "Hubungi Sales",
       faqTitle: "Pertanyaan Umum",
       faq1Q: "Apakah saya harus bisa coding untuk memakai Axeon?",
       faq1A: "Sama sekali tidak. Axeon menyediakan dashboard visual tanpa kode untuk meluncurkan brankas Anda dan mengatur komunitas sepenuhnya lewat UI.",
       faq2Q: "Bagaimana cara kerja gateway Fiat ke Crypto?",
-      faq2A: "Kami terintegrasi dengan penyedia pembayaran global (seperti Stripe/MoonPay). Pengguna Anda bisa membayar pakai Kartu Kredit, dan dananya akan otomatis masuk ke dompet Solana Anda dalam bentuk USDC.",
+      faq2A: "Kami terintegrasi dengan penyedia pembayaran global. Pengguna Anda bisa membayar pakai Kartu Kredit, dan dananya akan otomatis masuk ke dompet Solana Anda.",
       faq3Q: "Siapa yang menahan dana saat transaksi berlangsung?",
       faq3A: "Anda sendiri. Axeon menggunakan arsitektur zero-custody. Smart contract langsung merutekan uang dari pembeli ke dompet Anda secara instan tanpa perantara.",
       faq4Q: "Bisa pindahin member grup Telegram saya yang lama?",
       faq4A: "Tentu. Paket Pro memungkinkan Anda melakukan 'whitelist' untuk member lama, sehingga mereka mendapat akses tanpa harus melewati halaman pembayaran.",
       faq5Q: "Bagaimana jika masa langganan pengguna habis?",
-      faq5A: "Axeon Sentinel (Bot Telegram kami) terus tersinkronisasi dengan blockchain Solana. Detik di mana waktu on-chain pengguna kedaluwarsa, bot akan langsung mengeluarkannya dari grup.",
-
+      faq5A: "Axeon Sentinel terus tersinkronisasi dengan blockchain Solana. Detik di mana waktu on-chain pengguna kedaluwarsa, bot akan langsung mengeluarkannya dari grup.",
       footProduct: "Produk",
       footCompany: "Perusahaan",
       footLegal: "Legal",
@@ -221,57 +218,21 @@ export default function Home() {
     }
   };
 
+  const getTimeString = (timeType: string) => {
+    if (timeType === 'new') return t[lang].timeNew;
+    if (timeType === 'old1') return t[lang].timeOld1;
+    if (timeType === 'old2') return t[lang].timeOld2;
+    return t[lang].timeNew;
+  };
+
   if (!isClient) return null;
 
   return (
-    <div className={`min-h-screen ${currentTheme === 'dark' ? 'dark bg-black' : 'bg-white'}`}>
-      <main className="relative w-full flex flex-col text-zinc-900 dark:text-zinc-100 transition-colors duration-300 font-sans scroll-smooth selection:bg-blue-500/30 dark:selection:bg-[#00ffcc]/30 selection:text-blue-700 dark:selection:text-[#00ffcc]">
+    <div className="min-h-screen">
+      <main className="relative w-full flex flex-col transition-colors duration-300 font-sans scroll-smooth selection:bg-blue-500/30 dark:selection:bg-[#00ffcc]/30 selection:text-blue-700 dark:selection:text-[#00ffcc]">
         <ClickSpark sparkColor={currentTheme === 'dark' ? '#00ffcc' : '#2563eb'} sparkSize={6} sparkRadius={15} sparkCount={5} easing="ease-out">
           
           <GridBackground />
-
-          {/* ================= FULL NAVBAR ================= */}
-          <nav className="fixed top-0 w-full z-50 border-b border-zinc-200 dark:border-white/5 bg-white/70 dark:bg-black/70 backdrop-blur-xl transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-              
-              <div className="flex items-center gap-10">
-                <Link href="/" className="flex items-center gap-3 cursor-pointer group">
-                  <div className="size-2.5 bg-blue-600 dark:bg-[#00ffcc] shadow-[0_0_10px_rgba(37,99,235,0.5)] dark:shadow-[0_0_10px_#00ffcc] group-hover:scale-110 transition-transform" />
-                  <span className="font-bold tracking-widest text-xs text-zinc-900 dark:text-white transition-colors">AXEON</span>
-                </Link>
-                
-                <div className="hidden lg:flex items-center gap-6">
-                  <a href="#product" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navProduct}</a>
-                  <a href="#solutions" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navSolutions}</a>
-                  <a href="#pricing" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navPricing}</a>
-                  <Link href="/docs" className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-white uppercase tracking-widest transition-colors">{t[lang].navDocs}</Link>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 md:gap-6">
-                <button 
-                  onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')} 
-                  aria-label="Toggle Theme" 
-                  className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500 dark:text-zinc-400 z-10"
-                >
-                  {currentTheme === 'dark' ? (
-                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                  ) : (
-                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                  )}
-                </button>
-
-                <div className="flex items-center bg-zinc-100 dark:bg-zinc-900/80 p-1 rounded border border-zinc-200 dark:border-white/5 transition-colors z-10">
-                  <button onClick={() => setLang('en')} className={`px-2.5 py-1 font-mono text-[9px] font-bold tracking-widest transition-colors rounded-sm ${lang === 'en' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-[#00ffcc] shadow-sm' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-white'}`}>EN</button>
-                  <button onClick={() => setLang('id')} className={`px-2.5 py-1 font-mono text-[9px] font-bold tracking-widest transition-colors rounded-sm ${lang === 'id' ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-[#00ffcc] shadow-sm' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-white'}`}>ID</button>
-                </div>
-                
-                <Link href="/login" className="px-5 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[10px] font-mono uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-[#00ffcc] transition-colors rounded-sm shadow-md dark:shadow-[0_0_15px_rgba(255,255,255,0.1)] z-10">
-                  Dashboard &rarr;
-                </Link>
-              </div>
-            </div>
-          </nav>
 
           {/* ================= HERO SECTION ================= */}
           <section className="relative w-full pt-32 pb-20 px-6 flex items-center min-h-[90vh] max-w-7xl mx-auto z-10">
@@ -313,7 +274,7 @@ export default function Home() {
               <div className="col-span-1 lg:col-span-5 w-full relative hidden md:block">
                 <div className="bg-white/80 dark:bg-[#080808]/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 relative shadow-2xl transition-colors">
                   <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                     <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Live Network Activity</span>
+                     <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">{t[lang].liveActivity}</span>
                      <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   </div>
                   <div className="space-y-4">
@@ -324,7 +285,7 @@ export default function Home() {
                          </div>
                          <div className="flex-1">
                            <div className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{act.type}</div>
-                           <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{act.time}</div>
+                           <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{getTimeString(act.time)}</div>
                          </div>
                          <div className="text-right">
                            <span className={`text-xs font-mono font-bold ${act.currency === 'USD' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-[#00ffcc]'}`}>
@@ -393,7 +354,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ================= FEATURES: FIAT & CRYPTO (SOLUTIONS) ================= */}
+          {/* ================= FEATURES ================= */}
           <section id="solutions" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16 border-t border-zinc-200 dark:border-white/5 transition-colors">
             <div className="mb-16 text-center md:text-left">
               <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">
@@ -429,7 +390,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ================= PRICING TIERS ================= */}
+          {/* ================= PRICING ================= */}
           <section id="pricing" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-zinc-200 dark:border-white/5 scroll-mt-16 transition-colors">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t[lang].pricingTitle}</h2>
@@ -437,7 +398,6 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              
               <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm dark:shadow-none flex flex-col">
                 <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">{t[lang].p1Name}</h3>
                 <p className="text-sm text-zinc-500 mb-6 min-h-10">{t[lang].p1Desc}</p>
@@ -453,13 +413,13 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link href="/login" className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded">
-                  Deploy Free Vault
+                  {t[lang].btnFree}
                 </Link>
               </div>
 
               <div className="p-8 bg-blue-50 dark:bg-[#050505] border-2 border-blue-600 dark:border-[#00ffcc] rounded-2xl shadow-xl flex flex-col relative transform md:-translate-y-4">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full">
-                  Most Popular
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full whitespace-nowrap">
+                  {t[lang].badgePopular}
                 </div>
                 <h3 className="text-xl font-bold mb-2 text-blue-900 dark:text-white">{t[lang].p2Name}</h3>
                 <p className="text-sm text-blue-700/80 dark:text-zinc-400 mb-6 min-h-10">{t[lang].p2Desc}</p>
@@ -476,7 +436,7 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link href="/login" className="w-full py-3 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-xs uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-[#00e6b8] transition-colors text-center rounded shadow-lg">
-                  Upgrade to Pro
+                  {t[lang].btnPro}
                 </Link>
               </div>
 
@@ -495,14 +455,13 @@ export default function Home() {
                   ))}
                 </ul>
                 <button className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded">
-                  Contact Sales
+                  {t[lang].btnEnterprise}
                 </button>
               </div>
-
             </div>
           </section>
 
-          {/* ================= EXPANDED FAQ SECTION ================= */}
+          {/* ================= FAQ ================= */}
           <section className="py-24 px-6 max-w-4xl mx-auto border-t border-zinc-200 dark:border-white/5 transition-colors">
             <h2 className="text-3xl font-bold mb-12 tracking-tight text-center text-zinc-900 dark:text-white">{t[lang].faqTitle}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -588,7 +547,6 @@ export default function Home() {
               </div>
             </div>
           </footer>
-
         </ClickSpark>
       </main>
     </div>
