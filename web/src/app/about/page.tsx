@@ -34,7 +34,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0a0a0a] overflow-hidden">
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-      {/* @ts-ignore: Suppression for React 19 type mismatch in production environments */}
+      {/* @ts-ignore: Mandatory suppression for React 19 production build compatibility */}
       <ClickSpark 
         sparkColor={resolvedTheme === 'dark' ? '#71717a' : '#a1a1aa'} 
         sparkSize={5} 
@@ -63,13 +63,13 @@ export default function AboutPage() {
           </motion.p>
         </motion.div>
 
-        {/* BENTO GRID STORY */}
+        {/* BENTO GRID */}
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerWrap} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <motion.div variants={springUp} className="p-12 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 shadow-xl">
             <FiTarget className="size-10 text-zinc-300 dark:text-zinc-700 mb-8" />
             <h3 className="font-black italic uppercase tracking-tighter text-3xl mb-4 text-zinc-900 dark:text-white">The Legacy Problem.</h3>
             <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 leading-loose">
-              Manual verification consumes administrative time and leads to revenue leakage in subscription models.
+              Manual verification consumes administrative time and leads to revenue leakage.
             </p>
           </motion.div>
           
@@ -77,27 +77,27 @@ export default function AboutPage() {
             <FiZap className="size-10 text-zinc-700 dark:text-zinc-300 mb-8" />
             <h3 className="font-black italic uppercase tracking-tighter text-3xl mb-4">The Axeon Protocol.</h3>
             <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600 leading-loose">
-              Automated Telegram access with zero-knowledge verification ensuring zero custody over user assets.
+              Automated Telegram access with zero-knowledge verification ensuring zero custody.
             </p>
           </motion.div>
         </motion.div>
 
         {/* CORE VALUES */}
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerWrap} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <motion.div variants={springUp} className="col-span-1 md:col-span-2 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 shadow-lg flex items-center gap-8 overflow-hidden relative">
+          <motion.div variants={springUp} className="col-span-1 md:col-span-2 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 shadow-lg flex items-center gap-8 overflow-hidden relative group">
             <div className="relative z-10 w-2/3">
               <h4 className="font-black italic uppercase tracking-widest text-xl mb-3 text-zinc-900 dark:text-white">Shielded Settlement</h4>
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 leading-relaxed">
-                Cryptographic privacy ensuring subscriber identities remain obfuscated on the public ledger.
+                Cryptographic privacy for subscriber identities.
               </p>
             </div>
             <FiShield className="absolute -right-10 -bottom-10 size-64 text-zinc-100 dark:text-zinc-900/50" />
           </motion.div>
 
-          <motion.div variants={springUp} className="col-span-1 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden">
+          <motion.div variants={springUp} className="col-span-1 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 shadow-lg relative overflow-hidden group">
             <h4 className="font-black italic uppercase tracking-widest text-xl mb-3 text-zinc-900 dark:text-white relative z-10">Stateless</h4>
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 leading-relaxed relative z-10">
-              No backend dependencies for decentralized routing.
+              No backend dependencies.
             </p>
             <FiLayers className="absolute -right-5 -bottom-5 size-32 text-zinc-100 dark:text-zinc-900/50" />
           </motion.div>
