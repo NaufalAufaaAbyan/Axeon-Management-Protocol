@@ -1,9 +1,0 @@
-[programs.localnet]
-axeon_program = "5z8M2zUxD7L8TcA4SuvhJKc73A69M9KyrtDpdo8Fgok"
-
-[programs.devnet]
-axeon_program = "5z8M2zUxD7L8TcA4SuvhJKc73A69M9KyrtDpdo8Fgok"
-
-[provider]
-cluster = "devnet"
-wallet = "~/.config/solana/id.json"
