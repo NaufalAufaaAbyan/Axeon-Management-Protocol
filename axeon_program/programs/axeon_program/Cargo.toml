@@ -1,12 +1,12 @@
 [package]
-name = "contract"
+name = "axeon_program"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "contract"
+name = "axeon_program"
 
 [features]
 default = []
@@ -21,7 +21,7 @@ custom-panic = []
 
 
 [dependencies]
-anchor-lang = "1.0.0"
+anchor-lang = "1.0.2"
 
 [dev-dependencies]
 litesvm = "0.10.0"

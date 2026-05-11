@@ -1,12 +1,15 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
+import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import { useAxeonStore } from '../store/useAxeonStore';
 import { dict } from '../lib/dictionary';
+import Navbar from '../components/navbar/navbar';
 import Shuffle from '../components/magic/Shuffle';
-import ClickSpark from '../components/magic/ClickSpark';
-import GridBackground from '../components/magic/GridBackground';
+import { 
+  FiArrowRight, FiActivity, FiShield, FiCpu, FiGlobe, 
+  FiLayers, FiPieChart, FiLock, FiCheck, FiZap, FiTrendingUp 
+} from 'react-icons/fi';
 
 const ACTIVITIES_DATA = [
   { id: 1, type: 'Subscription', amount: '+ 25.00', currency: 'USDC', time: 'new' },
@@ -14,16 +17,31 @@ const ACTIVITIES_DATA = [
   { id: 3, type: 'Renewal Sweep', amount: '+ 10.00', currency: 'USDC', time: 'old2' },
 ];
 
+const springUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 20 } }
+};
+
+const staggerWrap: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const floatAnim = {
+  y: [0, -8, 0],
+  transition: { duration: 4, repeat: Infinity, ease: "easeInOut" as const }
+};
+
 export default function Home() {
   const [isClient, setIsClient] = useState(false);
-  const { resolvedTheme } = useTheme();
   const { lang } = useAxeonStore();
-
-  const [stats] = useState({ vol: 0.00, com: 0, user: 0 }); 
+  const { scrollYProgress } = useScroll();
+  const yParallax = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const opacityParallax = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setIsClient(true));
-    return () => cancelAnimationFrame(frame);
+    const timer = setTimeout(() => setIsClient(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const t = dict[lang as keyof typeof dict];
@@ -37,246 +55,279 @@ export default function Home() {
 
   if (!isClient) return null;
 
+  const roadmap = [
+    { q: 'Q1', year: '2026', title: 'Foundation', desc: 'Architecture design, ZK-Proof R&D, and Solana Smart Contract prototyping.', status: 'completed' },
+    { q: 'Q2', year: '2026', title: 'Initialization', desc: 'Hackathon MVP, Devnet Deployment, Telegram Sentinel Bot, & Fiat Gateway.', status: 'current' },
+    { q: 'Q3', year: '2026', title: 'Scaling & Audit', desc: 'Mainnet Beta release, external security audits, and early creator onboarding.', status: 'upcoming' },
+    { q: 'Q4', year: '2026', title: 'Expansion', desc: 'Full public launch, advanced analytics dashboard, and Enterprise DAO features.', status: 'upcoming' },
+  ];
+
   return (
-    <div className="min-h-screen">
-      <main className="relative w-full flex flex-col transition-colors duration-300 font-sans scroll-smooth selection:bg-blue-500/30 dark:selection:bg-[#00ffcc]/30 selection:text-blue-700 dark:selection:text-[#00ffcc]">
-        <ClickSpark sparkColor={resolvedTheme === 'dark' ? '#00ffcc' : '#2563eb'} sparkSize={6} sparkRadius={15} sparkCount={5} easing="ease-out">
-          
-          <GridBackground />
+    // FIX: Mengganti bg solid menjadi transparan agar magic layer di bawahnya terlihat
+    <div className="min-h-screen bg-transparent">
+      <main className="relative w-full flex flex-col font-sans scroll-smooth selection:bg-zinc-300 dark:selection:bg-zinc-700 overflow-hidden text-zinc-900 dark:text-zinc-100">
+        
+        <Navbar />
 
-          <section className="relative w-full pt-32 pb-20 px-6 flex items-center min-h-[90vh] max-w-7xl mx-auto z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-10 w-full items-center">
+        {/* ================= HERO SECTION ================= */}
+        <section className="relative pt-48 pb-20 px-6 flex items-center min-h-[90vh] max-w-7xl mx-auto z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-150 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-zinc-200/50 dark:from-zinc-800/20 via-transparent to-transparent blur-[100px] pointer-events-none" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 w-full items-center">
+            <motion.div style={{ y: yParallax, opacity: opacityParallax }} className="col-span-1 lg:col-span-7 flex flex-col items-start text-left z-10 w-full">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} 
+                className="flex items-center gap-3 border border-zinc-300 dark:border-zinc-800 bg-white/50 dark:bg-black/50 backdrop-blur-md px-4 py-2 rounded-full mb-10 shadow-sm"
+              >
+                <div className="size-2 bg-zinc-800 dark:bg-zinc-200 rounded-full animate-pulse" />
+                <span className="font-black text-[9px] text-zinc-600 dark:text-zinc-400 tracking-[0.3em] uppercase">{t.badge}</span>
+              </motion.div>
               
-              <div className="col-span-1 lg:col-span-7 flex flex-col items-start text-left z-10">
-                <div className="flex items-center gap-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm dark:shadow-none px-3 py-1.5 rounded-full mb-8 transition-colors">
-                  <div className="size-1.5 bg-blue-600 dark:bg-[#00ffcc] rounded-full animate-pulse" />
-                  <span className="font-mono text-[9px] text-zinc-600 dark:text-zinc-300 tracking-widest uppercase">{t.badge}</span>
-                </div>
-                
-                <h1 className="flex flex-col text-left mb-8 w-full">
-                  <div className="overflow-hidden pb-1"><Shuffle text={t.heroTitle1} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-900 dark:text-white" /></div>
-                  <div className="overflow-hidden pb-1"><Shuffle text={t.heroTitle2} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-400 dark:text-zinc-500" /></div>
-                  <div className="overflow-hidden pb-1"><Shuffle text={t.heroTitle3} className="text-[clamp(40px,6vw,80px)] font-bold tracking-tight leading-[1.05] text-zinc-900 dark:text-white" /></div>
-                </h1>
-                
-                <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-xl leading-relaxed mb-10">{t.heroSub}</p>
+              <h1 className="flex flex-col text-left mb-6 w-full uppercase italic tracking-tighter leading-[0.9]">
+                <div className="overflow-hidden pb-1 flex justify-start"><Shuffle textAlign="left" text={t.heroTitle1} className="text-5xl md:text-7xl lg:text-[85px] font-black text-zinc-900 dark:text-white" /></div>
+                <div className="overflow-hidden pb-1 flex justify-start"><Shuffle textAlign="left" text={t.heroTitle2} className="text-5xl md:text-7xl lg:text-[85px] font-black text-zinc-500 dark:text-zinc-400" /></div>
+                <div className="overflow-hidden pb-1 flex justify-start"><Shuffle textAlign="left" text={t.heroTitle3} className="text-5xl md:text-7xl lg:text-[85px] font-black text-zinc-900 dark:text-white" /></div>
+              </h1>
+              
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 max-w-lg leading-relaxed mb-10 italic font-medium">
+                {t.heroSub}
+              </motion.p>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                  <Link href="/login" className="w-full sm:w-auto px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[11px] font-mono uppercase tracking-widest hover:bg-blue-600 dark:hover:bg-[#00ffcc] transition-all text-center rounded shadow-lg flex items-center justify-center gap-3">
-                    {t.btnStart}
-                  </Link>
-                  <Link href="/docs" className="w-full sm:w-auto px-8 py-4 bg-white dark:bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-bold text-[11px] font-mono uppercase tracking-widest hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all text-center rounded shadow-sm dark:shadow-none">
-                    {t.btnDocs}
-                  </Link>
-                </div>
-              </div>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto relative">
+                <Link href="/login" className="w-full sm:w-auto h-14 px-10 bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all rounded-xl relative z-10 flex items-center justify-center gap-3 shadow-lg active:scale-95 group">
+                  {t.btnStart} <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link href="/docs" className="w-full sm:w-auto h-14 px-8 bg-white/50 dark:bg-black/50 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white font-black text-[10px] uppercase tracking-widest hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all rounded-xl flex items-center justify-center backdrop-blur-md">
+                  {t.btnDocs}
+                </Link>
+              </motion.div>
+            </motion.div>
 
-              <div className="col-span-1 lg:col-span-5 w-full relative hidden md:block">
-                <div className="bg-white/80 dark:bg-[#080808]/80 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 relative shadow-2xl transition-colors">
-                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                     <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">{t.liveActivity}</span>
-                     <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  </div>
-                  <div className="space-y-4">
-                     {ACTIVITIES_DATA.map((act) => (
-                       <div key={act.id} className="flex items-center gap-4 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-800/50">
-                         <div className={`size-8 rounded-full flex items-center justify-center ${act.currency === 'USD' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
-                           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                         </div>
-                         <div className="flex-1">
-                           <div className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{act.type}</div>
-                           <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{getTimeString(act.time)}</div>
-                         </div>
-                         <div className="text-right">
-                           <span className={`text-xs font-mono font-bold ${act.currency === 'USD' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-[#00ffcc]'}`}>
-                             {act.amount} {act.currency}
-                           </span>
-                         </div>
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, type: "spring" }}
+              className="col-span-1 lg:col-span-5 w-full relative hidden lg:block"
+            >
+              <div className="bg-white/70 dark:bg-[#111111]/80 backdrop-blur-2xl border border-zinc-200 dark:border-zinc-800/80 rounded-4xl p-6 relative shadow-2xl">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+                   <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+                     <FiActivity /> {t.liveActivity}
+                   </span>
+                   <span className="flex h-2 w-2 rounded-full bg-zinc-800 dark:bg-zinc-300 animate-pulse"></span>
+                </div>
+                <div className="space-y-3">
+                   {ACTIVITIES_DATA.map((act, i) => (
+                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 + (i * 0.1) }} key={act.id} className="flex items-center gap-4 p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-zinc-800/50">
+                       <div className="size-10 rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center">
+                         {act.currency === 'USD' ? <FiGlobe size={16}/> : <FiActivity size={16} />}
                        </div>
-                     ))}
-                  </div>
+                       <div className="flex-1">
+                         <div className="text-[10px] font-black text-zinc-900 dark:text-white uppercase tracking-widest">{act.type}</div>
+                         <div className="text-[9px] font-bold text-zinc-500 uppercase mt-1">{getTimeString(act.time)}</div>
+                       </div>
+                       <div className="text-right">
+                         <span className="text-xs font-black tracking-widest text-zinc-900 dark:text-white">
+                           {act.amount} <span className="text-[9px] text-zinc-500">{act.currency}</span>
+                         </span>
+                       </div>
+                     </motion.div>
+                   ))}
                 </div>
               </div>
+            </motion.div>
+          </div>
+        </section>
 
-            </div>
-          </section>
+        {/* ================= BENTO INTELLIGENCE ================= */}
+        <section id="solutions" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={staggerWrap} className="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <motion.div variants={springUp} className="md:col-span-8 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between group overflow-hidden relative shadow-lg">
+              <div className="space-y-6 relative z-10 text-left">
+                <div className="size-14 rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-800 dark:text-zinc-200"><FiPieChart size={24} /></div>
+                <h3 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white italic uppercase tracking-tighter leading-none">The 20% <br/> Revenue Gap.</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-base leading-relaxed max-w-lg italic">
+                  Manual management fails to revoke expired access. Axeon automates the purge the exact second a subscription ends. <strong className="text-zinc-900 dark:text-white">No leakage. Pure performance.</strong>
+                </p>
+              </div>
+              <div className="mt-16 flex flex-wrap gap-12 relative z-10 text-left">
+                 <div>
+                    <div className="text-5xl font-black text-zinc-900 dark:text-white italic tracking-tighter">20%</div>
+                    <div className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-3">Revenue Recovered</div>
+                 </div>
+                 <div>
+                    <div className="text-5xl font-black text-zinc-400 dark:text-zinc-600 italic tracking-tighter">40%</div>
+                    <div className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 mt-3">Admin Efficiency</div>
+                 </div>
+              </div>
+            </motion.div>
 
-          <section className="relative z-10 border-y border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-[#020202]/90 backdrop-blur-md py-12 transition-colors">
-             <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">{t.trustBadge}</span>
-             </div>
-            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800">
-               <div className="flex flex-col items-center justify-center pt-4 md:pt-0">
-                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">${stats.vol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t.statVolDesc}</span>
+            <motion.div variants={springUp} className="md:col-span-4 p-10 rounded-4xl bg-zinc-100 dark:bg-[#151515] border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between text-left shadow-lg">
+               <motion.div animate={floatAnim} className="relative z-10"><FiShield className="text-zinc-800 dark:text-zinc-200 size-12 mb-16" /></motion.div>
+               <div className="space-y-4 relative z-10">
+                  <h4 className="font-black text-zinc-900 dark:text-white uppercase text-xs tracking-widest italic">Unbiased Sentinel</h4>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold uppercase leading-relaxed italic">
+                    Our autonomous agent performs state audits every 60 seconds. Zero-tolerance enforcement.
+                  </p>
                </div>
-               <div className="flex flex-col items-center justify-center pt-8 md:pt-0">
-                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">{stats.com.toLocaleString('en-US')}</span>
-                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t.statComDesc}</span>
-               </div>
-               <div className="flex flex-col items-center justify-center pt-8 md:pt-0">
-                 <span className="text-4xl md:text-5xl font-mono font-bold text-zinc-900 dark:text-white mb-2 tracking-tighter transition-colors">{stats.user.toLocaleString('en-US')}</span>
-                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{t.statUserDesc}</span>
-               </div>
-            </div>
-          </section>
+            </motion.div>
 
-          <section id="product" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t.howTitle}</h2>
-              <p className="text-sm md:text-base text-zinc-500 max-w-2xl mx-auto">{t.howSub}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[{ step: "01", title: t.how1, desc: t.how1Desc }, { step: "02", title: t.how2, desc: t.how2Desc }, { step: "03", title: t.how3, desc: t.how3Desc }].map((item, i) => (
-                <div key={i} className="relative p-8 bg-white dark:bg-[#050505] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm dark:shadow-none transition-colors group">
-                  <span className="absolute -top-6 -left-2 text-6xl font-bold text-zinc-100 dark:text-zinc-900/50 group-hover:text-blue-50 dark:group-hover:text-[#00ffcc]/10 transition-colors z-0">{item.step}</span>
-                  <div className="relative z-10 mt-4">
-                    <h3 className="text-xl font-bold mb-3 text-zinc-900 dark:text-white">{item.title}</h3>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{item.desc}</p>
-                  </div>
+            <motion.div variants={springUp} className="md:col-span-4 p-10 rounded-4xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between text-left shadow-lg">
+               <motion.div animate={floatAnim} className="relative z-10"><FiTrendingUp className="text-zinc-800 dark:text-zinc-200 size-12 mb-16" /></motion.div>
+               <div className="space-y-4 relative z-10">
+                  <h4 className="font-black text-zinc-900 dark:text-white uppercase text-xs tracking-widest italic">Flat 5% Fee</h4>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-bold uppercase leading-relaxed italic">
+                    Aligned with creators. Zero upfront cost. Non-custodial payouts directly to your vault.
+                  </p>
+               </div>
+            </motion.div>
+
+            <motion.div variants={springUp} className="md:col-span-8 p-10 rounded-4xl bg-zinc-900 dark:bg-[#0a0a0a] border border-zinc-800 flex items-center justify-between overflow-hidden relative shadow-lg">
+               <div className="space-y-6 relative z-10 text-left">
+                  <h3 className="text-3xl md:text-4xl font-black text-white italic uppercase tracking-tighter">Stateless Protocol.</h3>
+                  <p className="text-[11px] text-zinc-400 font-black uppercase tracking-widest italic max-w-sm leading-loose">
+                    Connecting global Fiat/Crypto identifiers with Web3 infrastructure without friction. Shielded settlement active.
+                  </p>
+               </div>
+               <FiLayers size={180} className="text-zinc-800 dark:text-white/5 absolute -right-10 -bottom-10" />
+            </motion.div>
+          </motion.div>
+        </section>
+
+        {/* ================= DEVELOPMENT ROADMAP ================= */}
+        <section className="py-24 px-6 max-w-7xl mx-auto border-t border-zinc-200 dark:border-zinc-800/50">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-zinc-900 dark:text-white mb-4">Development Roadmap</h2>
+            <p className="text-xs font-black uppercase tracking-[0.4em] text-zinc-500 italic">May 2026 Status Update</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {roadmap.map((item, i) => (
+              <div key={i} className={`p-8 rounded-4xl border transition-all ${
+                item.status === 'current' 
+                  ? 'bg-zinc-900 dark:bg-zinc-100 border-zinc-900 dark:border-white shadow-xl scale-105 z-10 relative' 
+                  : 'bg-white dark:bg-[#111111] border-zinc-200 dark:border-zinc-800 opacity-70'
+              }`}>
+                <div className="flex justify-between items-start mb-6">
+                  <span className={`text-3xl font-black italic tracking-tighter ${item.status === 'current' ? 'text-white dark:text-black' : 'text-zinc-900 dark:text-white'}`}>{item.q}</span>
+                  {item.status === 'completed' && <FiCheck className="text-emerald-500 size-5" />}
+                  {item.status === 'current' && <div className="px-2 py-1 bg-white/20 dark:bg-black/10 rounded text-[9px] font-black uppercase tracking-widest text-white dark:text-black animate-pulse">Now</div>}
                 </div>
-              ))}
-            </div>
-          </section>
+                <h4 className={`font-black text-sm uppercase tracking-widest mb-3 ${item.status === 'current' ? 'text-white dark:text-black' : 'text-zinc-900 dark:text-white'}`}>{item.title}</h4>
+                <p className={`text-xs leading-relaxed ${item.status === 'current' ? 'text-zinc-300 dark:text-zinc-600 font-medium' : 'text-zinc-500'}`}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          <section id="solutions" className="relative z-10 py-24 px-6 max-w-7xl mx-auto scroll-mt-16 border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <div className="mb-16 text-center md:text-left">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t.featTitle} <span className="text-zinc-400 dark:text-zinc-500">{t.featSub}</span></h2>
-              <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed mx-auto md:mx-0">{t.featDesc}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* ================= 8-STAGE WORKFLOW ENGINE ================= */}
+        <section className="py-24 px-6 bg-zinc-100/50 dark:bg-[#0d0d0d]/50 border-y border-zinc-200 dark:border-zinc-800/50 overflow-hidden">
+          <div className="max-w-4xl mx-auto space-y-16">
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-left space-y-4">
+              <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white italic uppercase tracking-tighter leading-none">The Engine.</h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">8 Stages of Unbiased Performance</p>
+            </motion.div>
+            
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerWrap} className="grid gap-3">
               {[
-                { title: t.feat1Title, desc: t.feat1Desc, icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" },
-                { title: t.feat2Title, desc: t.feat2Desc, icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" },
-                { title: t.feat3Title, desc: t.feat3Desc, icon: "M8 9l3 3-3 3m5 0h3M4 17h16a2 2 0 002-2V9a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2z" }
-              ].map((feat, i) => (
-                <div key={i} className="bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 p-8 rounded-xl shadow-sm dark:shadow-none hover:border-blue-300 dark:hover:border-zinc-600 transition-colors group">
-                  <div className="size-12 rounded-xl bg-blue-50 dark:bg-zinc-900 border border-blue-100 dark:border-zinc-800 flex items-center justify-center mb-6 group-hover:border-blue-400 dark:group-hover:border-[#00ffcc] transition-colors">
-                    <svg className="size-6 text-blue-600 dark:text-zinc-400 dark:group-hover:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={feat.icon} /></svg>
+                { s: 'Pulse Contact', d: 'Automated contact via Telegram gateway.', i: <FiCpu/> },
+                { s: 'Hybrid Identity', d: 'Syncing Google or Wallet identifiers.', i: <FiLock/> },
+                { s: 'Settlement Hub', d: 'Instant verification of local/digital assets.', i: <FiGlobe/> },
+                { s: 'Proof Audit', d: 'Protocol validation of payment evidence.', i: <FiCheck/> },
+                { s: 'Access Grant', d: 'Encrypted, single-use invite links issued.', i: <FiLayers/> },
+                { s: 'Identity Sync', d: 'Cross-platform member verification.', i: <FiActivity/> },
+                { s: 'Real-time Guard', d: 'Status monitoring every sixty seconds.', i: <FiShield/> },
+                { s: 'Auto-Purge', d: 'Ruthless revocation of expired permissions.', i: <FiZap/> }
+              ].map((step, i) => (
+                <motion.div 
+                  key={i} variants={springUp}
+                  className="group p-6 rounded-2xl bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 flex items-center gap-6 hover:border-zinc-400 dark:hover:border-zinc-600 transition-all text-left shadow-sm"
+                >
+                  <div className="text-zinc-300 dark:text-zinc-700 font-black italic text-2xl w-10 text-center transition-colors group-hover:text-zinc-900 dark:group-hover:text-white">0{i+1}</div>
+                  <div className="size-12 rounded-xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-600 dark:text-zinc-400">{step.i}</div>
+                  <div className="flex-1">
+                    <h4 className="font-black uppercase italic text-sm text-zinc-900 dark:text-white tracking-widest mb-1">{step.s}</h4>
+                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{step.d}</p>
                   </div>
-                  <h3 className="font-bold text-lg mb-3 text-zinc-900 dark:text-white">{feat.title}</h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{feat.desc}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </section>
+            </motion.div>
+          </div>
+        </section>
 
-          <section id="pricing" className="relative z-10 py-24 px-6 max-w-7xl mx-auto border-t border-zinc-200 dark:border-white/5 scroll-mt-16 transition-colors">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight text-zinc-900 dark:text-white">{t.pricingTitle}</h2>
-              <p className="text-sm md:text-base text-zinc-500 max-w-2xl mx-auto">{t.pricingSub}</p>
+        {/* ================= REFINED FINAL CTA ================= */}
+        <section className="py-24 px-6 text-center">
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={springUp}
+            className="max-w-4xl mx-auto rounded-[3rem] bg-zinc-900 dark:bg-zinc-100 p-12 md:p-16 relative overflow-hidden shadow-2xl"
+          >
+            <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white dark:text-black mb-8 relative z-10 leading-[0.9]">Secure Your <br/> Sovereignty.</h2>
+            <div className="relative z-10 inline-block">
+              <Link href="/login" title="Initialize Infrastructure" aria-label="Initialize Infrastructure" className="h-14 px-10 rounded-xl bg-white dark:bg-black text-zinc-900 dark:text-white font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center shadow-xl hover:scale-105 transition-all">
+                Initialize Infrastructure
+              </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col">
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">{t.p1Name}</h3>
-                <p className="text-sm text-zinc-500 mb-6 min-h-10">{t.p1Desc}</p>
-                <div className="mb-8"><span className="text-4xl font-bold text-zinc-900 dark:text-white">{t.p1Price}</span></div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  {[t.p1Feat1, t.p1Feat2, t.p1Feat3, t.p1Feat4].map((f, i) => (<li key={i} className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300"><svg className="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>{f}</li>))}
+            <p className="mt-10 text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500 relative z-10 italic">Zero Upfront Cost • Shielded Settlement</p>
+          </motion.div>
+        </section>
+
+        {/* ================= FOOTER ================= */}
+        <footer className="relative z-10 w-full bg-white dark:bg-[#050505] pt-20 pb-10 px-6 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-10 mb-16">
+              <div className="col-span-2 md:col-span-2">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="size-3 bg-zinc-900 dark:bg-white rounded-sm" />
+                  <span className="font-black tracking-widest text-lg text-zinc-900 dark:text-white uppercase italic">AXEON</span>
+                </div>
+                <p className="text-[11px] text-zinc-500 max-w-xs leading-relaxed font-bold uppercase tracking-widest italic">
+                  The financial layer for the next generation of premium digital communities. Decentralized, zero-custody, and instantly settled on Solana.
+                </p>
+              </div>
+
+              <div className="col-span-1">
+                <h4 className="font-black text-[9px] uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">Product</h4>
+                <ul className="space-y-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">
+                  <li><Link href="/docs" title={t.flDocs} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flDocs}</Link></li>
+                  <li><Link href="/changelog" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Changelog</Link></li>
+                  <li><a href="#solutions" title={t.flPricing} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flPricing}</a></li>
                 </ul>
-                <Link href="/login" className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded">{t.btnFree}</Link>
               </div>
 
-              <div className="p-8 bg-blue-50 dark:bg-[#050505] border-2 border-blue-600 dark:border-[#00ffcc] rounded-2xl shadow-xl flex flex-col relative transform md:-translate-y-4">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-[10px] uppercase tracking-widest px-4 py-1 rounded-full whitespace-nowrap">{t.badgePopular}</div>
-                <h3 className="text-xl font-bold mb-2 text-blue-900 dark:text-white">{t.p2Name}</h3>
-                <p className="text-sm text-blue-700/80 dark:text-zinc-400 mb-6 min-h-10">{t.p2Desc}</p>
-                <div className="mb-8"><span className="text-4xl font-bold text-blue-900 dark:text-white">{t.p2Price}</span><span className="text-sm text-blue-700/80 dark:text-zinc-500">{t.p2Period}</span></div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  {[t.p2Feat1, t.p2Feat2, t.p2Feat3, t.p2Feat4].map((f, i) => (<li key={i} className="flex items-center gap-3 text-sm text-blue-900 dark:text-zinc-200"><svg className="size-4 text-blue-600 dark:text-[#00ffcc]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>{f}</li>))}
+              <div className="col-span-1">
+                <h4 className="font-black text-[9px] uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">Solutions</h4>
+                <ul className="space-y-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">
+                  <li><span className="cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flTelegram}</span></li>
+                  <li><span className="cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flFiat}</span></li>
                 </ul>
-                <Link href="/login" className="w-full py-3 bg-blue-600 dark:bg-[#00ffcc] text-white dark:text-black font-bold text-xs uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-[#00e6b8] transition-colors text-center rounded shadow-lg">{t.btnPro}</Link>
               </div>
 
-              <div className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col">
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-white">{t.p3Name}</h3>
-                <p className="text-sm text-zinc-500 mb-6 min-h-10">{t.p3Desc}</p>
-                <div className="mb-8"><span className="text-4xl font-bold text-zinc-900 dark:text-white">{t.p3Price}</span></div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  {[t.p3Feat1, t.p3Feat2, t.p3Feat3, t.p3Feat4].map((f, i) => (<li key={i} className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-300"><svg className="size-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>{f}</li>))}
+              <div className="col-span-1">
+                <h4 className="font-black text-[9px] uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">Resources</h4>
+                <ul className="space-y-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">
+                  <li><Link href="/about" title={t.flAbout} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flAbout}</Link></li>
+                  <li><Link href="/blog" title={t.flBlog} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flBlog}</Link></li>
+                  <li><Link href="/security" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Security</Link></li>
                 </ul>
-                <a href="mailto:hello@axeon.com" className="w-full py-3 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors text-center rounded block">{t.btnEnterprise}</a>
+              </div>
+
+              <div className="col-span-1">
+                <h4 className="font-black text-[9px] uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">Legal</h4>
+                <ul className="space-y-4 text-[10px] font-bold tracking-widest uppercase text-zinc-500">
+                  <li><Link href="/privacy" title={t.flPrivacy} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flPrivacy}</Link></li>
+                  <li><Link href="/terms" title={t.flTerms} className="hover:text-zinc-900 dark:hover:text-white transition-colors">{t.flTerms}</Link></li>
+                </ul>
               </div>
             </div>
-          </section>
 
-          <section className="py-24 px-6 max-w-4xl mx-auto border-t border-zinc-200 dark:border-white/5 transition-colors">
-            <h2 className="text-3xl font-bold mb-12 tracking-tight text-center text-zinc-900 dark:text-white">{t.faqTitle}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                {q: t.faq1Q, a: t.faq1A}, {q: t.faq2Q, a: t.faq2A}, {q: t.faq3Q, a: t.faq3A}, {q: t.faq5Q, a: t.faq5A}
-              ].map((item, i) => (
-                <div key={i} className="p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm">
-                  <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{item.q}</h4>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{item.a}</p>
-                </div>
-              ))}
-              <div className="md:col-span-2 p-8 bg-white dark:bg-[#080808] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm">
-                <h4 className="font-bold mb-3 text-zinc-900 dark:text-white">{t.faq4Q}</h4>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{t.faq4A}</p>
+            <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">&copy; {new Date().getFullYear()} {t.footRights}</span>
+              <div className="flex gap-4 items-center">
+                <a href="https://github.com/NaufalAufaaAbyan/Axeon-Management-Protocol" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+                  <svg className="size-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
               </div>
             </div>
-          </section>
-
-          <footer className="relative z-10 w-full bg-zinc-100 dark:bg-[#030303] pt-20 pb-10 px-6 transition-colors border-t border-zinc-200 dark:border-zinc-800/50">
-            <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-10 mb-16">
-                <div className="col-span-2 md:col-span-2">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="size-3 bg-blue-600 dark:bg-[#00ffcc] shadow-[0_0_15px_rgba(37,99,235,0.5)] dark:shadow-[0_0_15px_#00ffcc]" />
-                    <span className="font-bold tracking-widest text-sm text-zinc-900 dark:text-white">AXEON</span>
-                  </div>
-                  <p className="text-sm text-zinc-500 max-w-sm leading-relaxed mb-6">The financial layer for the next generation of premium digital communities. Decentralized, zero-custody, and instantly settled on Solana.</p>
-                </div>
-
-                <div className="col-span-1">
-                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t.footProduct}</h4>
-                  <ul className="space-y-4 text-sm text-zinc-500">
-                    <li><Link href="/docs" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flDocs}</Link></li>
-                    <li><a href="#pricing" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flPricing}</a></li>
-                  </ul>
-                </div>
-
-                <div className="col-span-1">
-                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t.footSolutions}</h4>
-                  <ul className="space-y-4 text-sm text-zinc-500">
-                    <li><span className="cursor-pointer hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flTelegram}</span></li>
-                    <li><span className="cursor-pointer hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flFiat}</span></li>
-                  </ul>
-                </div>
-
-                <div className="col-span-1">
-                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t.footResources}</h4>
-                  <ul className="space-y-4 text-sm text-zinc-500">
-                    <li><Link href="/about" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flAbout}</Link></li>
-                    <li><Link href="/blog" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flBlog}</Link></li>
-                  </ul>
-                </div>
-
-                <div className="col-span-1">
-                  <h4 className="font-bold text-xs uppercase tracking-widest mb-6 text-zinc-900 dark:text-white">{t.footLegal}</h4>
-                  <ul className="space-y-4 text-sm text-zinc-500">
-                    <li><Link href="/privacy" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flPrivacy}</Link></li>
-                    <li><Link href="/terms" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flTerms}</Link></li>
-                    <li><Link href="/security" className="hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">{t.flSecurity}</Link></li>
-                  </ul>
-                </div>
-
-              </div>
-              <div className="pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
-                <span className="text-xs text-zinc-500">&copy; {new Date().getFullYear()} {t.footRights}</span>
-                <div className="flex gap-4">
-                  <a href="https://x.com/axeonprotocol" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" className="text-zinc-400 hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 24.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 4.076H5.078z"/></svg>
-                  </a>
-                  <a href="https://github.com/NaufalAufaaAbyan/Axeon-Management-Protocol" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-zinc-400 hover:text-blue-600 dark:hover:text-[#00ffcc] transition-colors">
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </footer>
-        </ClickSpark>
+          </div>
+        </footer>
       </main>
     </div>
   );

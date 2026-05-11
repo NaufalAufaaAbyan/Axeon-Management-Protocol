@@ -1,43 +1,87 @@
 @import "tailwindcss";
 
-:root {
-  --background: #000000;
-  --foreground: #fafafa;
-  --accent: #00ffcc;
-  --border: rgba(255, 255, 255, 0.08);
+@layer base {
+  :root {
+    --background: #f8f9fa; /* Light silver/gray background */
+    --foreground: #09090b; /* Dark text */
+    --selection-bg: #e4e4e7; /* zinc-200 */
+    --selection-text: #09090b; /* zinc-900 */
+    /* Warna Grid (0.06 biar lebih tebel dan kelihatan) */
+    --grid-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .dark {
+    --background: #0a0a0a; /* Deep graphite/black */
+    --foreground: #fafafa; /* Off-white text */
+    --selection-bg: #27272a; /* zinc-800 */
+    --selection-text: #fafafa; /* zinc-50 */
+    /* Warna Grid (0.06 biar lebih tebel dan kelihatan) */
+    --grid-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle Enterprise Grid dengan Fade-out di ujung */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: -1;
-  /* FIX: Tambahin webkit-mask-image buat support browser lama */
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 20%, transparent 90%);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 20%, transparent 90%);
+/* Global Selection Styling (Monochrome / Silver Vibe) */
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
-/* Custom Scrollbar Premium */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
+/* Ultra-Premium Minimalist Scrollbar */
+::-webkit-scrollbar { 
+  width: 4px; 
+}
+::-webkit-scrollbar-track { 
+  background: transparent; 
+}
 ::-webkit-scrollbar-thumb { 
-  background: #27272a; 
+  background: #d4d4d8; /* zinc-300 untuk light mode */
   border-radius: 10px; 
 }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a; /* zinc-800 untuk dark mode */
+}
+::-webkit-scrollbar-thumb:hover { 
+  background: #a1a1aa; /* zinc-400 */
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46; /* zinc-700 */
+}
+
+/* Hide number input arrows for cleaner forms (Dashboard UI) */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield; /* FIX: Added standard property */
+}
 
 /* Utilities tambahan */
 .glass-panel {
-  @apply bg-[#09090b]/80 backdrop-blur-xl border border-white/5 shadow-2xl;
+  @apply bg-white/70 dark:bg-[#0a0a0c]/80 backdrop-blur-2xl border border-zinc-200 dark:border-white/10 shadow-2xl;
+}
+
+/* MAGIC GRID NATIVE CSS (Anti-Gagal) */
+@layer utilities {
+  .magic-grid-bg {
+    background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: 32px 32px;
+    -webkit-mask-image: radial-gradient(ellipse at center, transparent 10%, black 100%);
+    mask-image: radial-gradient(ellipse at center, transparent 10%, black 100%);
+  }
 }

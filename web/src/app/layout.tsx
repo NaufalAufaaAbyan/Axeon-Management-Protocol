@@ -1,34 +1,42 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/providers/ThemeProvider";
-import WalletContextProvider from "../components/providers/WalletContextProvider";
-import { Toaster } from "sonner";
-import Navbar from "../components/navbar/navbar"; // IMPORT DI SINI
-
-const inter = Inter({ subsets: ["latin"] });
+import { WalletContextProvider } from "../components/providers/WalletContextProvider";
+import ContextMenuProvider from "../components/providers/ContextMenuProvider";
+import GridBackground from "../components/magic/GridBackground";
+import FlickeringGrid from "../components/magic/FlickeringGrid";
+import ClickSpark from "../components/magic/ClickSpark";
 
 export const metadata: Metadata = {
-  title: "Axeon Protocol | Stateless Subscription Infrastructure",
-  description: "Monetize your Telegram and Discord communities seamlessly.",
+  title: "Axeon Protocol | Secure Your Community Sovereignty",
+  description: "Non-custodial infrastructure for Telegram community monetization.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${inter.className} bg-white dark:bg-[#050505] text-zinc-900 dark:text-zinc-100 transition-colors duration-300`}>
-        <ThemeProvider>
-          <WalletContextProvider>
-            {/* TAMBAHKAN NAVBAR DI SINI SEBAGAI HEADER GLOBAL */}
-            <Navbar />
-            {children}
-            <Toaster position="bottom-right" theme="system" richColors closeButton />
-          </WalletContextProvider>
-        </ThemeProvider>
+      <body className="antialiased font-sans bg-[#f8f9fa] dark:bg-[#0a0a0a] text-zinc-900 dark:text-zinc-100 overflow-x-hidden">
+        <WalletContextProvider>
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="dark" 
+            enableSystem={false} 
+            disableTransitionOnChange
+          >
+            <ClickSpark>
+              <div className="relative min-h-screen">
+                <GridBackground />
+                <FlickeringGrid />
+                
+                <div className="relative z-10">
+                  <ContextMenuProvider>
+                    {children}
+                  </ContextMenuProvider>
+                </div>
+              </div>
+            </ClickSpark>
+          </ThemeProvider>
+        </WalletContextProvider>
       </body>
     </html>
   );

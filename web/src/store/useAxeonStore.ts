@@ -1,11 +1,12 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface AxeonState {
   isAuthenticated: boolean;
   role: 'guest' | 'admin' | 'subscriber';
   tier: 0 | 1 | 2;
   walletAddress: string | null;
-  lang: 'en' | 'id'; // Global Language State
+  lang: 'en' | 'id';
   
   login: (role: 'admin' | 'subscriber', address: string, tier?: 0 | 1 | 2) => void;
   logout: () => void;
@@ -13,28 +14,35 @@ interface AxeonState {
   setLang: (lang: 'en' | 'id') => void;
 }
 
-export const useAxeonStore = create<AxeonState>((set) => ({
-  isAuthenticated: false,
-  role: 'guest',
-  tier: 0,
-  walletAddress: null,
-  lang: 'en', // Default ke English
+export const useAxeonStore = create<AxeonState>()(
+  persist(
+    (set) => ({
+      isAuthenticated: false,
+      role: 'guest',
+      tier: 0,
+      walletAddress: null,
+      lang: 'en', // Default ke English
 
-  login: (role, address, tier = 0) => set({ 
-    isAuthenticated: true, 
-    role, 
-    walletAddress: address, 
-    tier 
-  }),
-  
-  logout: () => set({ 
-    isAuthenticated: false, 
-    role: 'guest', 
-    walletAddress: null, 
-    tier: 0 
-  }),
-  
-  upgradeTier: (newTier) => set({ tier: newTier }),
-  
-  setLang: (lang) => set({ lang }),
-}));
+      login: (role, address, tier = 0) => set({ 
+        isAuthenticated: true, 
+        role, 
+        walletAddress: address, 
+        tier 
+      }),
+      
+      logout: () => set({ 
+        isAuthenticated: false, 
+        role: 'guest', 
+        walletAddress: null, 
+        tier: 0 
+      }),
+      
+      upgradeTier: (newTier) => set({ tier: newTier }),
+      
+      setLang: (lang) => set({ lang }),
+    }),
+    {
+      name: 'axeon-storage', // Nama key yang bakal disimpen di localStorage browser
+    }
+  )
+);
