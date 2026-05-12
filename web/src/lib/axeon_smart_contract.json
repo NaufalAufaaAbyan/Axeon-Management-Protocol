@@ -1,0 +1,143 @@
+{
+  "address": "AUDVu7j6i6BoVSR1VRYHzyzWztJuJhG3d3DGYN8hjy3g",
+  "metadata": {
+    "name": "axeon_smart_contract",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "initialize_vault",
+      "discriminator": [
+        48,
+        191,
+        163,
+        44,
+        71,
+        129,
+        63,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  120,
+                  101,
+                  111,
+                  110,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "price",
+          "type": "u64"
+        },
+        {
+          "name": "duration",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NameEmpty",
+      "msg": "Vault name cannot be empty."
+    },
+    {
+      "code": 6001,
+      "name": "NameTooLong",
+      "msg": "Vault name exceeds 64 characters."
+    },
+    {
+      "code": 6002,
+      "name": "InvalidPrice",
+      "msg": "Price must be greater than zero."
+    }
+  ],
+  "types": [
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "duration",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
