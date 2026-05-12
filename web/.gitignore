@@ -47,3 +47,6 @@ target/
 **/*.so
 **/*.json
 !idl/*.json
+
+# Tambahin ini di .gitignore biar file IDL gak ke-skip
+!axeon_smart_contract.json
