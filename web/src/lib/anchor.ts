@@ -1,20 +1,22 @@
 import { Program, AnchorProvider, Idl } from "@coral-xyz/anchor";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
-import idl from "./axeon_program.json";
+import idl from "./axeon_smart_contract.json";
 
-// Kalau lu butuh nge-referensi Program ID di tempat lain
-export const PROGRAM_ID = new PublicKey("5z8M2zUxD7L8TcA4SuvhJKc73A69M9KyrtDpdo8Fgok");
+export const PROGRAM_ID = new PublicKey("AUDVu7j6i6BoVSR1VRYHzyzWztJuJhG3d3DGYN8hjy3g");
 
-export const getProvider = (wallet: AnchorWallet, network: string = "https://api.devnet.solana.com") => {
-  const connection = new Connection(network, "confirmed");
-  const provider = new AnchorProvider(connection, wallet, {
+export const getProvider = (wallet: AnchorWallet, rpcEndpoint?: string) => {
+  const connection = new Connection(
+    rpcEndpoint || "https://api.devnet.solana.com",
+    "confirmed"
+  );
+
+  return new AnchorProvider(connection, wallet, {
     preflightCommitment: "confirmed",
+    commitment: "confirmed",
   });
-  return provider;
 };
 
 export const getProgram = (provider: AnchorProvider) => {
-  // Versi terbaru cuma butuh (idl, provider)
   return new Program(idl as Idl, provider);
 };

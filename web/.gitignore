@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+node_modules/
+target/
+.anchor/
+.DS_Store
+**/*.so
+**/*.json
+!idl/*.json

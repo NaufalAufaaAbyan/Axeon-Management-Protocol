@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Data Creator yang diisi dari halaman Settings
+model Creator {
+  walletAddress   String   @id
+  displayName     String?
+  telegramGroupId String?  // ID Grup Telegram yang dicolok Sentinel Bot
+  vaults          Vault[]
+}
+
+// Data Vault (Grup Premium) yang di-deploy dari Admin Dashboard
+model Vault {
+  id            String         @id @default(uuid())
+  creatorWallet String
+  creator       Creator        @relation(fields: [creatorWallet], references: [walletAddress])
+  name          String
+  currency      String         @default("USDC")
+  priceAmount   Float          
+  subscriptions Subscription[]
+}
+
+// Transaksi dan masa aktif Subscriber
+model Subscription {
+  id          String   @id @default(uuid())
+  userWallet  String
+  telegramId  String   // NEW: Buat nyimpen Username/ID Telegram si pembayar
+  vaultId     String
+  vault       Vault    @relation(fields: [vaultId], references: [id])
+  txSignature String   @unique
+  expiryDate  DateTime
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+}

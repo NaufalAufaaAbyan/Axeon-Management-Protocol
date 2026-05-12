@@ -1,39 +1,33 @@
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
-import { Telegraf } from 'telegraf';
+import { logger } from './utils/logger';
+import paymentRoutes from './routes/payment.routes';
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
-// 1. Inisialisasi Bot Sentinel
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  throw new Error('TELEGRAM_BOT_TOKEN is not defined in .env');
-}
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:3000'], // Mengizinkan akses HANYA dari frontend lu
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+app.use(express.json());
 
-// 2. Command Dasar buat Testing
-bot.start((ctx) => {
-  ctx.reply('Axeon Sentinel Bot is online and ready to guard the vault! 🛡️');
+// Routes
+app.use('/api/payments', paymentRoutes);
+
+// Health Check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'Axeon Server is Active',
+    version: '1.0.0-hackathon-ready'
+  });
 });
 
-bot.command('ping', (ctx) => {
-  ctx.reply('PONG! Backend Orchestrator is connected.');
-});
-
-// 3. Jalankan Bot (Long Polling)
-bot.launch().then(() => {
-  console.log('🤖 Telegram Sentinel Bot is running...');
-}).catch((err) => {
-  console.error('Failed to start bot:', err);
-});
-
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
-// 4. Jalankan Server Express
-app.listen(port, () => {
-  console.log(`🚀 Axeon Orchestrator Backend running on port ${port}`);
+app.listen(PORT, () => {
+  logger.info(`🚀 Axeon Backend (Prisma) flying on http://localhost:${PORT}`);
 });
