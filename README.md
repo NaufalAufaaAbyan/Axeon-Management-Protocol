@@ -1,93 +1,202 @@
-# 🛡️ Axeon Protocol
-### *Institution-Grade Subscription Infrastructure for Telegram Communities on Solana*
+# Axeon-Management-Protocol
 
-Axeon Protocol adalah protokol manajemen akses komunitas premium yang **non-custodial** dan **stateless**. Kami menjembatani fragmentasi antara pembayaran dunia nyata (Fiat/QRIS) dengan verifikasi on-chain di Solana, memungkinkan otomatisasi manajemen member secara desentralisasi.
+> Solana-based subscription infrastructure for non-custodial premium Telegram community management.
 
----
+![GitHub stars](https://img.shields.io/github/stars/Opayys/Axeon-Management-Protocol?style=for-the-badge&logo=github) ![GitHub forks](https://img.shields.io/github/forks/Opayys/Axeon-Management-Protocol?style=for-the-badge&logo=github) ![GitHub issues](https://img.shields.io/github/issues/Opayys/Axeon-Management-Protocol?style=for-the-badge&logo=github) ![Last commit](https://img.shields.io/github/last-commit/Opayys/Axeon-Management-Protocol?style=for-the-badge&logo=github) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white) ![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white) ![License](https://img.shields.io/badge/license-LICENSE-green?style=for-the-badge)
 
-## 📖 1. Deskripsi Project
-### Apa yang dibangun?
-Infrastruktur tingkat institusi untuk kreator konten dan admin komunitas premium di Telegram untuk mengelola langganan secara otomatis menggunakan Smart Contract Solana sebagai *Single Source of Truth*.
+## 📑 Table of Contents
 
-### Untuk siapa?
-Kreator konten, penyedia sinyal trading, dan komunitas eksklusif yang membutuhkan sistem penagihan otomatis yang transparan dan tidak dapat dimanipulasi.
+- [Description](#description)
+- [Key Features](#key-features)
+- [Use Cases](#use-cases)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [Key Dependencies](#key-dependencies)
+- [Available Scripts](#available-scripts)
+- [Project Structure](#project-structure)
+- [Development Setup](#development-setup)
+- [Contributing](#contributing)
+- [License](#license)
 
-### Kenapa di Solana?
-- **Speed & Low Cost:** Memungkinkan validasi akses ribuan member secara real-time dengan biaya transaksi rendah.
-- **Programmable Money:** Memastikan pembayaran langganan langsung mengalir ke vault kreator secara otomatis tanpa perantara.
+## 📝 Description
 
----
+Axeon Protocol is an institution-grade, non-custodial access management system designed for premium Telegram communities on the Solana blockchain. By bridging traditional payment pathways with on-chain verification, it allows creators and administrators to automate subscription billing and group membership without relying on centralized or custodial intermediaries.
 
-## 🛠️ 2. Tech Stack
-- **Program (Smart Contract):** Rust & Anchor Framework v0.29.0
-- **Frontend:** Next.js 14 (App Router), Tailwind CSS
-- **Authentication:** Privy.io (Embedded Wallets & Social Login)
-- **Backend Service:** Node.js (TypeScript), Telegraf.js (Bot Sentinel)
-- **Environment:** Fedora Linux, Vs-Code
+## ✨ Key Features
 
----
+- **🦀 Rust Anchor Smart Contract** — Manages subscription agreements directly on-chain using a customized Rust program built with the Anchor Framework.
+- **🤖 Telegraf Bot Sentinel** — Monitors the Solana blockchain in the background to dynamically enforce or revoke Telegram group access based on subscriber status.
+- **🔗 Stateless PDA Architecture** — Utilizes Program Derived Addresses with dedicated seeds to store subscriber information directly on the Solana ledger.
+- **🔐 Privy Embedded Wallets** — Integrates social logins and embedded Web3 wallets to allow friction-free transactions and on-chain subscriptions.
+- **🐻 Zustand State Management** — Implements Zustand in the client dashboard to provide lightweight, performant global state tracking.
 
-## 🏗️ 3. Arsitektur Sistem
-Axeon menggunakan mekanisme **PDA (Program Derived Address)** untuk meminimalkan ketergantungan pada database tradisional (Stateless Architecture).
+## 🎯 Use Cases
 
-### Alur Kerja Utama:
-1. **Registration:** Admin mendaftarkan Grup ID melalui Dashboard Web.
-2. **Subscription:** User memilih paket langganan dan melakukan tanda tangan transaksi melalui Privy.
-3. **On-Chain Storage:** Data disimpan dalam akun PDA dengan seeds `[b"subscriber", user_pubkey, group_id]`.
-4. **Enforcement:** Bot Sentinel secara berkala mengecek status PDA di Solana. Jika expired, Bot mengeksekusi instruksi *kick* secara otomatis.
+- Automating paid subscription onboarding and automatic membership revocation for Telegram-based trading groups.
+- Setting up a decentralized paywall for content creators to manage premium channels using Program Derived Addresses.
+- Bridges traditional payment notifications with decentralized on-chain subscription verification.
 
----
+## 🛠️ Tech Stack
 
-## 🔒 4. Fitur Keamanan (Security)
-- **Signer Authorization:** Validasi di level Smart Contract memastikan hanya admin terdaftar yang bisa mengubah konfigurasi.
-- **On-Chain Validation:** Pengecekan waktu kedaluwarsa dilakukan langsung menggunakan `Clock::get()?.unix_timestamp`.
-- **Stateless Backend:** Backend tidak menyimpan Private Key; semua verifikasi bersifat transparan di blockchain.
+- 🟨 **JavaScript**
+- ⬢ **Node.js**
+- 🔷 **Prisma**
+- 🦀 **Rust**
 
----
+**Notable libraries:** Zustand
 
-## 🚀 5. Cara Install & Run (Lokal)
+## ⚡ Quick Start
 
-### **A. Smart Contract**
 ```bash
-cd contract
-anchor build
-solana program deploy target/deploy/contract.so
 
----
+# 1. Clone the repository
+git clone https://github.com/Opayys/Axeon-Management-Protocol.git
 
-### **B. Backend Bot**
-```bash
-cd backend
+# 2. Install dependencies
 npm install
-# Setup .env dengan TELEGRAM_BOT_TOKEN dan PROGRAM_ID
-npx tsx src/index.ts
 
-### **C. Frontend Dashboard**
-```bash
-cd web
-npm install
-npm run dev
+# 3. Start the dev server
+cargo run
+```
+
+## 📦 Key Dependencies
+
+```
+next-themes: ^0.4.6
+react-hot-toast: ^2.6.0
+sonner: ^2.0.7
+zustand: ^5.0.12
+```
+
+## 🚀 Available Scripts
+
+- **test** — `make test`
+- **build** — `cargo build`
+- **run** — `cargo run`
+- **test** — `cargo test`
+
+## 📁 Project Structure
+
+```
+.
+├── axeon_smart_contract
+│   ├── Anchor.toml
+│   ├── Cargo.lock
+│   ├── Cargo.toml
+│   ├── migrations
+│   │   └── deploy.ts
+│   ├── package.json
+│   ├── programs
+│   │   └── axeon_smart_contract
+│   │       ├── Cargo.toml
+│   │       └── src
+│   │           ├── constants.rs
+│   │           ├── error.rs
+│   │           ├── instructions
+│   │           │   └── ...
+│   │           ├── instructions.rs
+│   │           ├── lib.rs
+│   │           └── state.rs
+│   ├── rust-toolchain.toml
+│   └── tsconfig.json
+├── package.json
+├── server
+│   ├── dev.db
+│   ├── package.json
+│   ├── prisma
+│   │   ├── dev.db
+│   │   ├── migrations
+│   │   │   ├── 20260511154437_init
+│   │   │   │   └── migration.sql
+│   │   │   └── migration_lock.toml
+│   │   └── schema.prisma
+│   ├── src
+│   │   ├── config
+│   │   │   ├── prisma.ts
+│   │   │   ├── solana.ts
+│   │   │   └── telegram.ts
+│   │   ├── controllers
+│   │   │   └── payment.controller.ts
+│   │   ├── index.ts
+│   │   ├── routes
+│   │   │   └── payment.routes.ts
+│   │   ├── services
+│   │   │   ├── solana.service.ts
+│   │   │   └── telegram.service.ts
+│   │   └── utils
+│   │       └── logger.ts
+│   └── tsconfig.json
+└── web
+    ├── eslint.config.mjs
+    ├── next.config.ts
+    ├── package.json
+    ├── postcss.config.mjs
+    ├── src
+    │   ├── app
+    │   │   ├── about
+    │   │   │   └── page.tsx
+    │   │   ├── blog
+    │   │   │   └── page.tsx
+    │   │   ├── changelog
+    │   │   │   └── page.tsx
+    │   │   ├── dashboard
+    │   │   │   ├── admin
+    │   │   │   │   └── ...
+    │   │   │   ├── layout.tsx
+    │   │   │   └── user
+    │   │   │       └── ...
+    │   │   ├── docs
+    │   │   │   └── page.tsx
+    │   │   ├── favicon.ico
+    │   │   ├── globals.css
+    │   │   ├── layout.tsx
+    │   │   ├── login
+    │   │   │   └── page.tsx
+    │   │   ├── page.tsx
+    │   │   ├── privacy
+    │   │   │   └── page.tsx
+    │   │   ├── security
+    │   │   │   └── page.tsx
+    │   │   └── terms
+    │   │       └── page.tsx
+    │   ├── components
+    │   │   ├── PaymentSection.tsx
+    │   │   ├── magic
+    │   │   │   ├── ClickSpark.tsx
+    │   │   │   ├── FlickeringGrid.tsx
+    │   │   │   ├── GridBackground.tsx
+    │   │   │   └── Shuffle.tsx
+    │   │   ├── navbar
+    │   │   │   └── navbar.tsx
+    │   │   └── providers
+    │   │       ├── ContextMenuProvider.tsx
+    │   │       ├── ThemeProvider.tsx
+    │   │       └── WalletContextProvider.tsx
+    │   ├── idl
+    │   │   └── axeon_protocol.json
+    │   ├── lib
+    │   │   ├── anchor.ts
+    │   │   ├── api.ts
+    │   │   ├── axeon_smart_contract.json
+    │   │   └── dictionary.ts
+    │   └── store
+    │       └── useAxeonStore.ts
+    └── tsconfig.json
+```
+
+## 🛠️ Development Setup
+
+### Node.js / JavaScript
+1. Install Node.js (v18+ recommended)
+2. Install dependencies: `npm install` (or `yarn` / `pnpm install` / `bun install`)
+3. Start the dev server: see the **Quick Start** above
+
+### Rust
+1. Install Rust via [rustup](https://rustup.rs/)
+2. `cargo build && cargo run`
+
+## 📜 License
+
+This project is licensed under the **LICENSE** License.
 
 ---
-
-## 📍 6. Contract Address
-| Network | Address |
-| :--- | :--- |
-| **Solana Devnet** | `4UqaYx35pwj7uQPho1ggUs3z4nYBTSUfrEKAnusEGdKg` |
-
----
-
-## 🔗 7. Live Demo
-* **Axeon Protocol Demo:** [https://axeon-management-protocol.vercel.app](https://axeon-management-protocol.vercel.app)
-
----
-
-## 👥 Tim & Kontribusi (UNAMABCC)
-* **Naufal Aufaa Abyan** ([@opayybaikk](https://x.com/NaufalByann)) - 
-* **Reza Dwi Wiranata** ([@rejak_](https://x.com/rezawrntaa?s=21)) - 
-* **Adil Daisuke** (()) -
-* **Della Selfia Riyani ((https://x.com/delluyyy07?s=11)) -
-* **Superteam Indonesia Community** - Mentorship & Ecosystem Support.
-
----
-**© 2026 Axeon Protocol.** *Built for Indonesia National Campus Hackathon.*
